@@ -20,6 +20,14 @@ Inside a git repo the page is written to `.op/<topic>.html` at the repo root;
 outside one it goes in the current directory. See
 [`examples/dns.html`](.agents/skills/one-pager/examples/dns.html) for a sample.
 
+## Preview
+
+![A one-pager about installing this skill, split down the middle: light mode on the left, dark mode on the right](docs/preview.webp)
+
+Every page follows the reader's system theme on screen, light or dark, as in the
+split above. Printing always uses the light palette, so a printout looks the same
+whatever mode the screen is in.
+
 ## Requirements
 
 - Node.js 18 or later, for the font and check scripts. Without Node, the skill
@@ -36,18 +44,18 @@ With Node.js 22.20 or later, the open [skills CLI](https://github.com/vercel-lab
 installs straight from this repo:
 
 ```bash
-npx skills add <owner>/<repo> -g
+npx skills add chalharb/one-pager -g
 ```
 
 It asks which agents to install for; to skip the prompt, name them:
 
 ```bash
-npx skills add <owner>/<repo> -g -a claude-code codex github-copilot -y
+npx skills add chalharb/one-pager -g -a claude-code codex github-copilot -y
 ```
 
 `-g` installs for your user, so the skill works in every project. Leave it off
 to install into the current project instead. Update later with
-`npx skills update`, and pin a release with `<owner>/<repo>@v1.0.0`.
+`npx skills update`, and pin a release with `chalharb/one-pager@v1.0.0`.
 
 The skills CLI doesn't cover ChatGPT; use the zip below for that.
 
@@ -56,7 +64,7 @@ The skills CLI doesn't cover ChatGPT; use the zip below for that.
 Clone the repo once:
 
 ```bash
-git clone <repo-url> ~/Code/one-pager
+git clone https://github.com/chalharb/one-pager.git ~/Code/one-pager
 ```
 
 The skill lives in `.agents/skills/one-pager/`. The installs below symlink it,
@@ -172,4 +180,5 @@ checks out as a plain text file.
 ## Fonts
 
 Schibsted Grotesk and Geist Mono are licensed under the SIL Open Font License
-1.1, which allows bundling and redistribution.
+1.1, which allows bundling and redistribution. The license texts ship with the
+fonts in [`fonts/`](.agents/skills/one-pager/fonts/).

@@ -145,13 +145,12 @@
     <div>
       <section>
         <h2>Install</h2>
-        <p>Clone the repo, then symlink the skill so a <code>git pull</code> updates every tool at once:</p>
-<pre class="cmd">git clone &lt;repo-url&gt; ~/Code/one-pager
-mkdir -p ~/.claude/skills
-ln -s ~/Code/one-pager/.agents/skills/one-pager ~/.claude/skills/</pre>
+        <p>One command installs it for Claude Code, Codex, Copilot, and Cursor (Node 22.20+):</p>
+<pre class="cmd">npx skills add chalharb/one-pager -g</pre>
+        <p>Or clone <code>github.com/chalharb/one-pager</code> and symlink the skill folder yourself:</p>
         <ul>
-          <li><strong>Claude Code</strong> reads <code>~/.claude/skills/</code>, as above.</li>
-          <li><strong>Codex and Copilot</strong> both read <code>~/.agents/skills/</code>, so one more link covers both.</li>
+          <li><strong>Claude Code</strong> reads <code>~/.claude/skills/</code>.</li>
+          <li><strong>Codex and Copilot</strong> both read <code>~/.agents/skills/</code>.</li>
           <li><strong>ChatGPT</strong> takes a zip of the <code>one-pager</code> folder, uploaded under Skills → Create.</li>
           <li><strong>One project only:</strong> copy the folder into that repo’s <code>.claude/skills/</code> or <code>.agents/skills/</code> instead.</li>
         </ul>
