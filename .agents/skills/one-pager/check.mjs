@@ -1,0 +1,123 @@
+#!/usr/bin/env node
+// Validate a one-pager: self-contained, filled in, and exactly one printed page.
+//
+//   node check.mjs <file.html> [--shot out.png] [--pdf out.pdf]
+//
+// Exit 0 = all checks passed. Exit 1 = at least one failure (listed on stderr).
+// The print check needs Chrome/Chromium; without one it is reported as SKIPPED.
+
+import { readFileSync, existsSync, mkdtempSync, rmSync, statSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+const args = process.argv.slice(2);
+const opt = (name) => {
+  const i = args.indexOf(name);
+  return i === -1 ? null : args.splice(i, 2)[1];
+};
+const shotPath = opt('--shot');
+const pdfPath = opt('--pdf');
+const file = args[0];
+
+if (!file) {
+  console.error('usage: node check.mjs <file.html> [--shot out.png] [--pdf out.pdf]');
+  process.exit(2);
+}
+if (!existsSync(file)) {
+  console.error(`not found: ${file}`);
+  process.exit(2);
+}
+
+const html = readFileSync(file, 'utf8');
+const failures = [];
+const notes = [];
+const check = (ok, msg) => { if (!ok) failures.push(msg); };
+
+// --- Static checks ---------------------------------------------------------
+check(/^\s*<!doctype html>/i.test(html), 'missing <!doctype html>');
+const title = html.match(/<title>([^<]*)<\/title>/i)?.[1]?.trim();
+check(title, 'missing or empty <title>');
+check(/<meta[^>]+name=["']viewport["']/i.test(html), 'missing viewport meta tag');
+check(/@media\s+print/i.test(html), 'missing @media print rules');
+check(
+  !/@media\s*\(\s*prefers-color-scheme\s*:\s*dark\s*\)/i.test(html),
+  'dark mode must be screen-only so print stays light: use "@media screen and (prefers-color-scheme: dark)"',
+);
+
+const placeholders = [...new Set(html.match(/\{\{[A-Z0-9_]+\}\}/g) ?? [])];
+check(placeholders.length === 0, `unfilled placeholders: ${placeholders.join(', ')}`);
+check(!/lorem ipsum/i.test(html), 'contains lorem ipsum filler');
+check(!/<pre class="mermaid">/.test(html), 'unrendered mermaid diagram: run diagram.mjs on this file');
+check(!html.includes('<!-- @fonts -->'), 'fonts not embedded: run fonts.mjs on this file');
+check(/<!-- @fonts:start/.test(html) || html.includes('<!-- @fonts -->'), 'no font block: restore the <!-- @fonts --> marker before </body> and run fonts.mjs');
+
+// Must open offline: nothing loaded over the network. Plain <a href> links are fine.
+const external = [
+  ...html.matchAll(/<(?:script|img|iframe|video|audio|source|embed)\b[^>]*\bsrc=["']?((?:https?:)?\/\/[^"'\s>]+)/gi),
+  ...html.matchAll(/<link\b[^>]*\bhref=["']?((?:https?:)?\/\/[^"'\s>]+)/gi),
+  ...html.matchAll(/@import\s+(?:url\()?["']?((?:https?:)?\/\/[^"')\s]+)/gi),
+  ...html.matchAll(/url\(\s*["']?((?:https?:)?\/\/[^"')\s]+)/gi),
+].map((m) => m[1]);
+check(external.length === 0, `loads external resources: ${[...new Set(external)].join(', ')}`);
+
+const kb = statSync(file).size / 1024;
+check(kb <= 500, `file is ${kb.toFixed(0)} KB (limit 500 KB)`);
+
+// --- Print check: must be exactly one page ---------------------------------
+const chrome = [
+  process.env.CHROME_BIN,
+  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+  '/Applications/Chromium.app/Contents/MacOS/Chromium',
+  '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+  '/usr/bin/google-chrome',
+  '/usr/bin/chromium',
+  '/usr/bin/chromium-browser',
+].find((p) => p && existsSync(p));
+
+let pages = null;
+if (!chrome) {
+  notes.push('print check SKIPPED: no Chrome/Chromium found (set CHROME_BIN)');
+} else {
+  const tmp = mkdtempSync(join(tmpdir(), 'one-pager-'));
+  const url = pathToFileURL(resolve(file)).href;
+  const run = (extra) =>
+    execFileSync(
+      chrome,
+      ['--headless=new', '--disable-gpu', '--hide-scrollbars', `--user-data-dir=${join(tmp, 'profile')}`, ...extra, url],
+      { stdio: 'ignore', timeout: 60_000 },
+    );
+  try {
+    const pdf = pdfPath ? resolve(pdfPath) : join(tmp, 'out.pdf');
+    run([`--print-to-pdf=${pdf}`, '--no-pdf-header-footer']);
+    // Count page objects; "/Type /Pages" (the tree root) must not match.
+    pages = (readFileSync(pdf, 'latin1').match(/\/Type\s*\/Page(?![a-zA-Z])/g) ?? []).length;
+    check(pages === 1, `prints as ${pages} pages; a one-pager must print as exactly 1 — cut content`);
+    if (pdfPath) notes.push(`pdf: ${pdf}`);
+    if (shotPath) {
+      const shot = resolve(shotPath);
+      run([`--screenshot=${shot}`, '--window-size=1100,1500']);
+      notes.push(`screenshot: ${shot}`);
+    }
+  } catch (err) {
+    failures.push(`chrome failed: ${err.message.split('\n')[0]}`);
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
+// --- Report ----------------------------------------------------------------
+const words = html
+  .replace(/<(style|script)[\s\S]*?<\/\1>/gi, ' ')
+  .replace(/<[^>]+>/g, ' ')
+  .split(/\s+/)
+  .filter(Boolean).length;
+
+console.log(`${file}: "${title ?? '?'}" — ${words} words, ${kb.toFixed(1)} KB${pages === null ? '' : `, ${pages} printed page(s)`}`);
+for (const n of notes) console.log(`  ${n}`);
+if (failures.length) {
+  for (const f of failures) console.error(`  FAIL ${f}`);
+  process.exit(1);
+}
+console.log('  OK');
