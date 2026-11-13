@@ -49,6 +49,8 @@ check(
 const placeholders = [...new Set(html.match(/\{\{[A-Z0-9_]+\}\}/g) ?? [])];
 check(placeholders.length === 0, `unfilled placeholders: ${placeholders.join(', ')}`);
 check(!/lorem ipsum/i.test(html), 'contains lorem ipsum filler');
+const deadLinks = html.match(/<a\b[^>]*\bhref=["']\s*#?\s*["']/gi) ?? [];
+check(deadLinks.length === 0, `${deadLinks.length} link(s) with an empty or "#" href: use the real URL or remove the entry`);
 check(!/<pre class="mermaid">/.test(html), 'unrendered mermaid diagram: run diagram.mjs on this file');
 check(!html.includes('<!-- @fonts -->'), 'fonts not embedded: run fonts.mjs on this file');
 check(/<!-- @fonts:start/.test(html) || html.includes('<!-- @fonts -->'), 'no font block: restore the <!-- @fonts --> marker before </body> and run fonts.mjs');

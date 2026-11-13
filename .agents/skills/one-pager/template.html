@@ -106,10 +106,42 @@
     font: 10.5px var(--mono); color: var(--muted);
   }
 
+  /* Directory layout: <main class="directory"> for pages of links, contacts and
+     other things to look up. Sections flow down two balanced columns; add
+     class="span" to a section (e.g. a wide contacts table) to run it full width. */
+  main.directory { display: block; columns: 2; column-gap: 28px; }
+  main.directory section { break-inside: avoid; margin: 0 0 16px; }
+  main.directory section + section { margin-top: 0; }
+  main.directory section.span { column-span: all; margin-top: 8px; }
+  .links { list-style: none; padding: 0; }
+  .links li { padding: 4px 0; border-bottom: 1px dotted var(--line); }
+  .links li + li { margin-top: 0; }
+  .links li:last-child { border-bottom: 0; }
+  .links a { font-weight: 500; }
+  .links .note { color: var(--muted); font-size: .93em; }
+  .links .url, .contacts .reach {
+    display: block; font: 10.5px/1.35 var(--mono); color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+  .contacts { width: 100%; border-collapse: collapse; font-size: .93em; }
+  .contacts th {
+    font: 500 10px var(--mono); letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); text-align: left; padding: 0 10px 4px 0;
+  }
+  .contacts td { padding: 4px 10px 4px 0; border-top: 1px dotted var(--line); vertical-align: top; }
+  .contacts td:first-child { font-weight: 600; }
+  .contacts .reach { display: inline; font-size: 11px; }
+
   @media (max-width: 640px) {
     .page { padding: 24px 20px; }
     h1 { font-size: 27px; }
     main { grid-template-columns: 1fr; gap: 16px; }
+    main.directory { columns: 1; }
+    .contacts thead { display: none; }
+    .contacts tr { display: block; padding: 6px 0; border-top: 1px dotted var(--line); }
+    .contacts td { display: inline; border: 0; padding: 0 8px 0 0; }
+    .contacts td:first-child { display: block; }
+    .contacts .reach { display: block; }
   }
 
   /* Print: exactly one Letter page, always the light palette. */
@@ -144,6 +176,8 @@
     <div class="stat"><b>{{STAT_4}}</b><span>{{STAT_4_LABEL}}</span></div>
   </div>
 
+  <!-- Explainer layout (default). For a cheat sheet of links and contacts, use the
+       directory layout instead: see "Layouts" in SKILL.md and examples/directory.html. -->
   <main>
     <div>
       <section>

@@ -20,6 +20,11 @@ Inside a git repo the page is written to `.op/<topic>.html` at the repo root;
 outside one it goes in the current directory. See
 [`examples/dns.html`](.agents/skills/one-pager/examples/dns.html) for a sample.
 
+Pages that are mostly things to look up, such as links to repos, Terraform
+workspaces, SharePoint sites, and the people to contact, use a directory layout
+instead. Ask for "a cheat sheet of our team's repos and contacts"; see
+[`examples/directory.html`](.agents/skills/one-pager/examples/directory.html).
+
 ## Preview
 
 ![A one-pager about installing this skill, split down the middle: light mode on the left, dark mode on the right](docs/preview.webp)
@@ -170,7 +175,8 @@ the skill folder in that project.
 | `diagram.mjs` | Renders Mermaid diagrams to inline SVG in the site palette (needs Chrome; downloads Mermaid once to `~/.cache/one-pager/`) |
 | `check.mjs` | Fails a page that loads from the network, has leftover placeholders, or prints as more than one page |
 | `fonts/` | Schibsted Grotesk and Geist Mono (latin subset) |
-| `examples/dns.html` | A finished one-pager |
+| `examples/dns.html` | A finished one-pager in the default explainer layout |
+| `examples/directory.html` | A finished cheat sheet in the directory layout: links to repos, Terraform, SharePoint, and contacts |
 
 `.claude/skills/one-pager` in this repo is a symlink to `.agents/skills/one-pager`,
 so Claude Code, Codex, and Copilot all find the skill when you work in this repo.

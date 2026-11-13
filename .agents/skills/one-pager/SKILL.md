@@ -42,7 +42,8 @@ as `.claude/skills` or `.agents/skills`.
      link to the file.
    - A path the user names always wins.
 
-   Copy `<skill-dir>/template.html` to that path and replace every
+   Pick a layout first (see **Layouts** below), then copy
+   `<skill-dir>/template.html` to that path and replace every
    `{{PLACEHOLDER}}`. Reshape the sections to fit the subject; the
    template's layout is a starting point.
 5. **Render diagrams, if any.** Skip this if the page has none.
@@ -79,6 +80,65 @@ as `.claude/skills` or `.agents/skills`.
 8. **Hand it over.** Give the user the file path (or download link) and one
    line on what the page covers. Mention any fact you could not verify.
 
+## Layouts
+
+The template supports two layouts. Both share the palette, fonts, print
+rules, and the one-page limit. Choose by what the reader will do with
+the page.
+
+- **Explainer** (default, `<main>`): the reader wants to *understand*
+  something. Prose in a wide column, reference material in a narrow
+  one. `examples/dns.html`.
+- **Directory** (`<main class="directory">`): the reader wants to *find*
+  things: links to repos, Terraform workspaces, SharePoint sites,
+  dashboards, runbooks, and the people to contact. Sections flow down
+  two balanced columns. `examples/directory.html`. Use it for cheat
+  sheets, "where everything lives" pages, team or service directories,
+  and onboarding link lists.
+
+For the directory layout, replace the template's `<main>` with
+`<main class="directory">` and fill it with these blocks. Copy their
+markup from `examples/directory.html`.
+
+- **Link list**: `<ul class="links">`, one `<li>` per resource, holding
+  an `<a>` whose text is the resource's name (`payments-api`, `Team
+  site`), then a `<span class="note">` of a few words on what it is for,
+  then a `<span class="url">` with a short form of the address.
+- **Contacts table**: `<table class="contacts">` with a `<thead>` row
+  of Area, Name, Role, Reach, and a `<span class="reach">` around each
+  email address or channel. Put it in `<section class="span">` so it runs
+  the full width; four columns are too cramped for half a page.
+- **Callout**: optional, one only, for the thing a reader must not miss,
+  such as how to escalate an incident.
+
+Rules that change in the directory layout:
+
+- **Group by what the reader looks for**: by kind (Code, Infrastructure,
+  Docs, People) or by system when there are several. Each group gets a
+  section with an `<h2>`. Two to six groups.
+- **Link text is a name, never a URL.** Readers scan for names.
+- **The short URL is for paper.** Printed links can't be clicked, so the
+  `.url` line shows where each one goes: host plus the meaningful path
+  (`github.contoso.com/payments/ledger`,
+  `contoso.sharepoint.com/sites/Payments`). Drop `https://`, query strings,
+  and noise such as `/Forms/AllItems.aspx` or `?csf=1&web=1`. Under a host
+  already shown above it, `…/sites/Payments/Runbooks` is enough.
+- **Never invent a link or a contact.** Use only URLs, names, roles and
+  addresses the user gave you or that you read from a source. If one is
+  missing, leave the entry out and say so in the hand-over; do not put
+  `#` or a guessed address on the page.
+- **No word target.** The 300–450 word range is for explainers. A
+  directory is measured in entries: about 15–30 links and up to about 10
+  contacts fit. The lede is one sentence or two short ones.
+- **No stat row and no diagram.**
+- **Kicker is `<Team or system> · Cheat sheet`.**
+- **Footer**: the owning team on the left, and on the right the month
+  and year the links were last checked (`Links checked November 2026`),
+  because this kind of page goes stale.
+- **When it overflows**, cut the descriptions first, then the least-used
+  links, and ask the user which to drop if it still does not fit. If the
+  content really needs two pages, say so; do not shrink the type.
+
 ## Delegating (optional)
 
 Do the work yourself by default. If your tool can start subagents, hand
@@ -110,7 +170,9 @@ writing.
 - **One printed page.** The checker prints the file with headless Chrome
   and fails if the PDF is not exactly one page. When it overflows, cut
   words. Do not shrink the type or the margins.
-- **About 300–450 words** of body text. The DNS example is 374.
+- **About 300–450 words** of body text in the explainer layout. The DNS
+  example is 374. The directory layout has its own limits (see
+  **Layouts**).
 - **Lead with the point.** Kicker, title, lede, then the detail.
 - **Kicker is `<Field> · One-pager`.** The field is the broad area the
   topic sits in, in two or three words: `Web platforms · One-pager`,
@@ -127,7 +189,7 @@ writing.
   next to the text it illustrates, and it replaces words rather than
   repeating them. No styling, colours, or `classDef` in the source; the
   renderer applies the palette. One diagram per page at most.
-- **Two columns of different jobs.** The wide column carries the
+- **Two columns of different jobs** (explainer layout). The wide column carries the
   explanation; the narrow one carries reference material (definitions,
   key terms, steps, a takeaway callout).
 - **Fixed palette.** The colours are the Blueprint palette from the
@@ -153,7 +215,8 @@ node <skill-dir>/check.mjs <skill-dir>/examples/dns.html
 
 It exits 1 and lists each problem when the file has no doctype, title,
 viewport tag, or print rules; has leftover `{{PLACEHOLDERS}}`; has an
-unrendered Mermaid block; has not had its fonts embedded; loads anything over the network; is larger than
+unrendered Mermaid block; has not had its fonts embedded; has a link
+with an empty or `#` href; loads anything over the network; is larger than
 500 KB; or prints as more or fewer than one page.
 
 Flags: `--shot out.png` saves a screenshot, `--pdf out.pdf` keeps the
