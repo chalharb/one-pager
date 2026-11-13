@@ -49,6 +49,27 @@ check(
 const placeholders = [...new Set(html.match(/\{\{[A-Z0-9_]+\}\}/g) ?? [])];
 check(placeholders.length === 0, `unfilled placeholders: ${placeholders.join(', ')}`);
 check(!/lorem ipsum/i.test(html), 'contains lorem ipsum filler');
+// No drift from the shared stylesheet: no inline styles, no colours outside the
+// palette. Rendered diagrams (<svg>) and the embedded font block are exempt.
+const PALETTE = new Set([
+  '#f5f3ee', '#ffffff', '#fff', '#e9e3d5', '#16181d', '#585e6a', '#dcd8ce', '#c4401a', '#b23a12', '#2c55c9',
+  '#0f1013', '#1c1f25', '#2a2620', '#eceae4', '#a1a6b0', '#2a2e36', '#ff6b3d', '#ff8a63', '#7c9cff',
+]);
+const own = html
+  .replace(/<svg[\s\S]*?<\/svg>/gi, '')
+  .replace(/<!-- @fonts:start[\s\S]*?@fonts:end -->/, '');
+const inlineStyles = (own.replace(/<style[\s\S]*?<\/style>/gi, '').match(/<[a-z][^>]*\sstyle\s*=/gi) ?? []).length;
+check(inlineStyles === 0, `${inlineStyles} element(s) with a style attribute: use the blocks in snippets.html, which are already styled`);
+const offPalette = [...new Set(
+  ((own.match(/<style[\s\S]*?<\/style>/gi) ?? []).join('')
+    .match(/#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?)\([^)]*\)/gi) ?? [])
+    .map((c) => c.toLowerCase())
+    .filter((c) => !PALETTE.has(c)),
+)];
+check(offPalette.length === 0, `colours outside the palette: ${offPalette.join(', ')}`);
+check(/<main\b/i.test(own.replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<!--[\s\S]*?-->/g, '')), 'no <main>: paste a shell from snippets.html at the <!-- @main --> marker');
+check(!/<!-- ====|<!-- @main/.test(html), 'leftover snippet or @main marker comments: copy only the markup between them');
+
 const deadLinks = html.match(/<a\b[^>]*\bhref=["']\s*#?\s*["']/gi) ?? [];
 check(deadLinks.length === 0, `${deadLinks.length} link(s) with an empty or "#" href: use the real URL or remove the entry`);
 check(!/<pre class="mermaid">/.test(html), 'unrendered mermaid diagram: run diagram.mjs on this file');

@@ -169,7 +169,8 @@ the skill folder in that project.
 | File | Purpose |
 |---|---|
 | `SKILL.md` | Instructions the agent follows when the skill runs |
-| `template.html` | Starting layout with light, dark, and print styles |
+| `template.html` | Page frame with every style, light, dark, and print |
+| `snippets.html` | Shells (explainer, directory) and blocks (link list, contacts, steps, comparison, timeline…) to build pages from |
 | `fonts.mjs` | Embeds the fonts into a finished page as base64 |
 | `fonts.py` | Same as `fonts.mjs`, for sandboxes without Node |
 | `diagram.mjs` | Renders Mermaid diagrams to inline SVG in the site palette (needs Chrome; downloads Mermaid once to `~/.cache/one-pager/`) |

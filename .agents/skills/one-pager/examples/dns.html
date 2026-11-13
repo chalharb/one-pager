@@ -86,7 +86,14 @@
   li + li { margin-top: 4px; }
   li::marker { color: var(--ember-text); }
   strong { font-weight: 600; }
-  code { font: 12.5px var(--mono); background: var(--sand); padding: 1px 4px; border-radius: 3px; }
+  a { color: var(--cobalt); text-underline-offset: 2px; }
+  code { font: .9em var(--mono); background: var(--sand); padding: 1px 4px; border-radius: 3px; }
+  pre {
+    font: 11.5px/1.45 var(--mono); background: var(--sand); border-radius: 6px;
+    padding: 8px 10px; white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  pre code { font: inherit; background: none; padding: 0; }
+  * + pre, pre + * { margin-top: 8px; }
 
   .diagram { margin: 4px 0 0; }
   .diagram svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
@@ -97,8 +104,29 @@
     padding: 10px 12px; border-radius: 0 6px 6px 0; font-size: 13.5px;
   }
   dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; }
-  dt { font: 600 12.5px var(--mono); color: var(--ember-text); }
-  dd { color: var(--ink); }
+  dt { color: var(--muted); }
+  dd { font-weight: 600; }
+  dl.terms dt { font: 600 .96em var(--mono); color: var(--ember-text); }
+  dl.terms dd { font-weight: 400; }
+
+  table { width: 100%; border-collapse: collapse; font-size: .93em; }
+  th {
+    font: 500 10px var(--mono); letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); text-align: left; padding: 0 10px 4px 0;
+  }
+  td { padding: 4px 10px 4px 0; border-top: 1px dotted var(--line); vertical-align: top; }
+  .compare td:first-child { color: var(--muted); }
+  .compare td { font-variant-numeric: tabular-nums; }
+  .wide { margin: 0 0 18px; }
+
+  .timeline { list-style: none; padding: 0 0 0 14px; border-left: 2px solid var(--line); }
+  .timeline li { position: relative; }
+  .timeline li + li { margin-top: 6px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -19px; top: .5em;
+    width: 8px; height: 8px; border-radius: 50%; background: var(--ember);
+  }
+  .timeline .when { display: block; font: 500 10.5px var(--mono); color: var(--ember-text); }
 
   footer {
     margin-top: 20px; padding-top: 10px; border-top: 1px solid var(--line);
@@ -106,12 +134,39 @@
     font: 10.5px var(--mono); color: var(--muted);
   }
 
+  /* Every block in snippets.html is styled here, so pasted snippets need no CSS.
+     Directory shell: <main class="directory">. Sections flow down two balanced
+     columns; class="span" on a section runs it full width. */
+  main.directory { display: block; columns: 2; column-gap: 28px; }
+  main.directory section { break-inside: avoid; margin: 0 0 16px; }
+  main.directory section + section { margin-top: 0; }
+  main.directory section.span { column-span: all; margin-top: 8px; }
+  .links { list-style: none; padding: 0; }
+  .links li { padding: 4px 0; border-bottom: 1px dotted var(--line); }
+  .links li + li { margin-top: 0; }
+  .links li:last-child { border-bottom: 0; }
+  .links a { font-weight: 500; }
+  .links .note { color: var(--muted); font-size: .93em; }
+  .links .url, .contacts .reach {
+    display: block; font: 10.5px/1.35 var(--mono); color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+  .contacts td:first-child { font-weight: 600; }
+  .contacts .reach { display: inline; font-size: 11px; }
+
   @media (max-width: 640px) {
     .page { padding: 24px 20px; }
     h1 { font-size: 27px; }
     main { grid-template-columns: 1fr; gap: 16px; }
+    main.directory { columns: 1; }
+    .contacts thead { display: none; }
+    .contacts tr { display: block; padding: 6px 0; border-top: 1px dotted var(--line); }
+    .contacts td { display: inline; border: 0; padding: 0 8px 0 0; }
+    .contacts td:first-child { display: block; }
+    .contacts .reach { display: block; }
   }
 
+  /* Print: exactly one Letter page, always the light palette. */
   @page { size: Letter; margin: 0.45in; }
   @media print {
     :root {
@@ -122,7 +177,7 @@
     body { padding: 0; font-size: 12.5px; }
     .page { max-width: none; border: 0; border-radius: 0; padding: 0; }
     main { grid-template-columns: 1.55fr 1fr; }
-    section, .stat, .callout, .diagram { break-inside: avoid; }
+    section, .stat, .callout, .diagram, pre, tr { break-inside: avoid; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
 </style>
@@ -172,7 +227,7 @@
     <aside>
       <section>
         <h2>Record types to know</h2>
-        <dl>
+        <dl class="terms">
           <dt>A</dt><dd>Name to IPv4 address</dd>
           <dt>AAAA</dt><dd>Name to IPv6 address</dd>
           <dt>CNAME</dt><dd>Alias to another name</dd>
