@@ -1,0 +1,29 @@
+<!--
+@block column-2
+@use Two columns with different jobs: the main column carries the explanation, the side column carries reference material (definitions, steps, requirements, a takeaway callout). Default layout for most pages.
+@options data-split="wide-left" (default, ~60/40), "wide-right", or "even". Each column is a .si-column-2__col stack. Columns stack on narrow screens, never in print.
+-->
+<style>
+.si-column-2 { display: grid; grid-template-columns: 1.55fr 1fr; gap: 28px; align-items: start; min-width: 0; }
+.si-column-2[data-split="wide-right"] { grid-template-columns: 1fr 1.55fr; }
+.si-column-2[data-split="even"] { grid-template-columns: 1fr 1fr; }
+.si-column-2__col { display: flex; flex-direction: column; gap: var(--si-gap); min-width: 0; }
+@media screen and (max-width: 880px) {
+  .si-column-2, .si-column-2[data-split] { grid-template-columns: 1fr; gap: var(--si-gap); }
+}
+</style>
+
+<div class="si-column-2" data-block="column-2" data-split="wide-left">
+  <div class="si-column-2__col">
+    <section>
+      <h2 class="si-subtitle" data-block="subtitle">Main</h2>
+      <p>The explanation.</p>
+    </section>
+  </div>
+  <div class="si-column-2__col">
+    <section>
+      <h2 class="si-subtitle" data-block="subtitle">Reference</h2>
+      <dl><dt>Term</dt><dd>Value</dd></dl>
+    </section>
+  </div>
+</div>

@@ -1,0 +1,48 @@
+{
+  "skill": "summarize-in",
+  "evals": [
+    {
+      "id": "two-page-topic",
+      "prompt": "/summarize-in 2 pages how edge networks function",
+      "expected_output": "A standalone HTML file at <repo>/.summarize-in/how-edge-networks-function.html with two .si-page sheets that passes check.mjs.",
+      "assertions": [
+        "check.mjs exits 0 on the output file",
+        "data-pages is 2 and the PDF prints 2 pages",
+        "kicker reads '<Field> · Summarized in 2 pages'",
+        "file contains no <script> and no http(s) resource URLs",
+        "agent asks the user whether to open the file before opening it"
+      ]
+    },
+    {
+      "id": "conversation-one-pager",
+      "prompt": "/summarize-in 1 page the research we've done in the chat",
+      "files": [],
+      "expected_output": "A one-page summary of decisions and findings from the conversation, sourced to 'This conversation'.",
+      "assertions": [
+        "check.mjs exits 0",
+        "no facts appear that were not established in the conversation",
+        "footer source names the conversation"
+      ]
+    },
+    {
+      "id": "cheatsheet",
+      "prompt": "/summarize-in a 1 page cheatsheet for using this skill",
+      "expected_output": "A dense one-page cheatsheet built mostly from lists, tables, and code blocks.",
+      "assertions": [
+        "check.mjs exits 0 with no wrapped-code warning",
+        "at least two code blocks with data-lang set",
+        "uses column-2"
+      ]
+    },
+    {
+      "id": "custom-block",
+      "prompt": "Summarize our Q3 metrics in 1 page and show the three headline numbers as big stat tiles.",
+      "expected_output": "A custom 'stat' block scaffolded with new-block.mjs into .summarize-in/blocks/ and used in the summary.",
+      "assertions": [
+        ".summarize-in/blocks/stat.html (or similar) exists",
+        "build.mjs prints no unscoped-selector warning for it",
+        "check.mjs exits 0"
+      ]
+    }
+  ]
+}

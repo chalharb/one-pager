@@ -1,0 +1,14 @@
+[
+  { "split": "train", "should_trigger": true,  "query": "<Names the domain directly, casual phrasing>" },
+  { "split": "train", "should_trigger": true,  "query": "<Describes the need WITHOUT naming the domain>" },
+  { "split": "train", "should_trigger": true,  "query": "<Long, context-heavy: file path, manager asked me to..., column names>" },
+  { "split": "train", "should_trigger": true,  "query": "<Task buried inside a larger multi-step request>" },
+  { "split": "train", "should_trigger": true,  "query": "<typos n abbreviations>" },
+  { "split": "train", "should_trigger": false, "query": "<Near miss: shares keywords, needs a different skill>" },
+  { "split": "train", "should_trigger": false, "query": "<Near miss: same file type, different job>" },
+  { "split": "train", "should_trigger": false, "query": "<Near miss: adjacent domain>" },
+  { "split": "validation", "should_trigger": true,  "query": "<Held out — never use to tune the description>" },
+  { "split": "validation", "should_trigger": true,  "query": "<Held out>" },
+  { "split": "validation", "should_trigger": false, "query": "<Held out near miss>" },
+  { "split": "validation", "should_trigger": false, "query": "<Held out near miss>" }
+]

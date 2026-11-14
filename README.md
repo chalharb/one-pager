@@ -1,184 +1,166 @@
-# one-pager
+# summarize-in
 
-An [Agent Skill](https://agentskills.io) that turns any topic into a single
-self-contained HTML file that reads well on screen and prints as exactly one
-Letter page. It uses the Blueprint palette and fonts from loganharber.com.
+An [Agent Skill](https://agentskills.io/specification) that summarizes anything into a fixed
+number of printed pages: a topic, a file, a URL, a codebase, or the conversation you just
+had. You get one standalone HTML file that opens anywhere, drops cleanly into Slack or
+email, has a light/dark toggle on screen, and prints to exactly the page budget.
 
-It works in Claude Code, OpenAI Codex, GitHub Copilot, and ChatGPT: all four
-read the same `SKILL.md` format, so there is one copy of the skill.
+It works with any agent that supports skills, including Claude Code, Codex, GitHub
+Copilot, Gemini CLI, Cursor, and OpenCode.
 
+<p align="center">
+  <img src="docs/preview.png" alt="A two-page summary of how edge networks work, shown half in light mode and half in dark mode" width="640">
+</p>
+
+```text
+/summarize-in 2 pages how edge networks function
+/summarize-in 1 page the research we've done in the chat
+/summarize-in a 1 page cheatsheet for using this skill
+/summarize-in 1 landscape page TLS handshake
 ```
-/one-pager how DNS works        # Claude Code, Copilot CLI
-$one-pager how DNS works        # Codex
-@one-pager how DNS works        # ChatGPT
-```
 
-Or just ask for "a one-pager about how DNS works"; every tool picks the skill up
-from its description.
-
-Inside a git repo the page is written to `.op/<topic>.html` at the repo root;
-outside one it goes in the current directory. See
-[`examples/dns.html`](.agents/skills/one-pager/examples/dns.html) for a sample.
-
-## Preview
-
-![A one-pager about installing this skill, split down the middle: light mode on the left, dark mode on the right](docs/preview.webp)
-
-Every page follows the reader's system theme on screen, light or dark, as in the
-split above. Printing always uses the light palette, so a printout looks the same
-whatever mode the screen is in.
-
-## Requirements
-
-- Node.js 18 or later, for the font and check scripts. Without Node, the skill
-  embeds fonts with Python 3 instead and skips the automated checks.
-- Google Chrome, Chromium, or Edge, for the one-page print check. Without one,
-  the check is skipped and the other checks still run. Set `CHROME_BIN` if your
-  browser is somewhere unusual.
+Examples: [2-page summary](skills/summarize-in/assets/examples/demo.html) ·
+[1 landscape page](skills/summarize-in/assets/examples/landscape.html) ·
+[every block](skills/summarize-in/assets/examples/blocks.html)
 
 ## Install
 
-### Quick install (Claude Code, Codex, Copilot, Cursor)
-
-With Node.js 22.20 or later, the open [skills CLI](https://github.com/vercel-labs/skills)
-installs straight from this repo:
+**Any harness, one command** (uses the [`skills`](https://www.npmjs.com/package/skills) CLI):
 
 ```bash
 npx skills add chalharb/one-pager -g
 ```
 
-It asks which agents to install for; to skip the prompt, name them:
+**Or clone and link** (edits to the clone go live straight away):
 
 ```bash
-npx skills add chalharb/one-pager -g -a claude-code codex github-copilot -y
+git clone https://github.com/chalharb/one-pager.git && cd one-pager
+tools/install.sh                                   # ~/.agents/skills (Codex, Copilot, and others)
+tools/install.sh --harness claude --harness agents # add Claude Code
+tools/install.sh --harness all                     # every harness listed below
+tools/install.sh --scope project --project-dir ~/code/app --harness claude  # one project only
 ```
 
-`-g` installs for your user, so the skill works in every project. Leave it off
-to install into the current project instead. Update later with
-`npx skills update`, and pin a release with `chalharb/one-pager@v1.0.0`.
+Add `--dry-run` to see what would be linked, or `--copy` to copy instead of symlinking.
+Start a new agent session afterwards, because skills load at startup.
 
-The skills CLI doesn't cover ChatGPT; use the zip below for that.
+**Requirements:**
 
-### Manual install
+- **Node.js 18+**
+- **Chrome, Chromium, or Edge**, for Mermaid diagrams and the page-count check
+- **Network access once**, to cache a pinned, checksum-verified Mermaid build
 
-Clone the repo once:
+## Use
+
+Name the skill and give it a constraint and a topic. You can also just ask for "a
+one-pager on …" and the agent will pick the skill from its description.
+
+| Harness | Invoke |
+| --- | --- |
+| Claude Code, Copilot CLI | `/summarize-in 2 pages <topic>` |
+| Codex | `$summarize-in 2 pages <topic>` |
+| Others | "summarize-in 2 pages …", or describe what you want |
+
+**The constraint:**
+
+| You write | You get |
+| --- | --- |
+| `1 page`, `2 pages`, … | The page budget. It defaults to 1 page. The agent fills it and the checker fails anything that overflows. |
+| `landscape` / `portrait` | The orientation. When you don't specify one and the content would read better wide (a flow, a timeline, a wide comparison), the agent asks you first. Landscape files open the print dialog in landscape. |
+| `A4` | A4 paper instead of Letter. |
+| `cheatsheet`, `brief`, `overview` | Changes the content: dense lists, tables, and code for a cheatsheet, prose for a brief or overview. |
+
+**Where files go:** inside a git repo, summaries are written to
+`<repo-root>/.summarize-in/<topic>.html`, even when you run from a subdirectory.
+Outside a repo they go to `~/.summarize-in/`. Set `SUMMARIZE_IN_DIR` to choose another
+folder. When the summary is ready, the agent asks whether to open it in your default
+browser or in your editor's preview.
+
+**Printing:** each page is its own sheet in the HTML, so the screen view matches the
+paper. Print always uses the light theme, and the theme toggle never prints.
+
+## Blocks
+
+Summaries are put together from small HTML blocks in
+[`skills/summarize-in/assets/blocks/`](skills/summarize-in/assets/blocks/README.md):
+
+| Block | Use it for |
+| --- | --- |
+| `wrapper` | The document shell: theme, page sheets, footer, print rules, light/dark toggle |
+| `column-1`, `column-2` | Full-width stack; two columns (`wide-left`, `wide-right`, or `even`) |
+| `title`, `subtitle` | Kicker, headline, and lede; section labels |
+| `code` | Syntax highlighting done at build time, for 25+ languages, with no JavaScript in the output |
+| `mermaid` | Diagrams rendered to inline SVG that follow the theme |
+| `callout` | `note`, `info`, `tip`, `warn`, or `danger` |
+
+Each block's CSS is scoped to its own `.si-<name>` class and uses only shared theme
+tokens. When the agent needs something new, such as stat tiles or a timeline, it
+scaffolds a **custom block** in `.summarize-in/blocks/`, either in the repo or in your
+home folder. Custom blocks sit next to your summaries and override built-ins with the
+same name:
 
 ```bash
-git clone https://github.com/chalharb/one-pager.git ~/Code/one-pager
+node skills/summarize-in/scripts/new-block.mjs stat --use "Two to four headline numbers"
 ```
 
-The skill lives in `.agents/skills/one-pager/`. The installs below symlink it,
-so a `git pull` in the clone updates every tool at once.
+## How it works
 
-### Claude Code
+```text
+where.mjs     picks the output path and lists the custom-block folders
+   ↓          the agent writes pages from blocks
+build.mjs     inlines only the CSS of blocks used, plus fonts, highlighting, and diagrams
+   ↓
+check.mjs     checks the file is standalone, then measures each page in headless Chrome
+   ↓          (fill %, overflow in px, diagram scale, code wrapping, PDF page count)
+open.mjs      opens the file in the browser, once you say yes
+```
+
+The output has no scripts, no external requests, and no shared stylesheet. The demo
+above is a single 127 KB file.
+
+## Repository layout
+
+```text
+skills/summarize-in/      the skill (this is what gets installed)
+├── SKILL.md              instructions the agent loads
+├── assets/blocks/        built-in blocks + README
+├── assets/examples/      demo, landscape, and block gallery (built output)
+├── assets/fonts/         Schibsted Grotesk + Geist Mono (SIL OFL 1.1)
+├── scripts/              where / build / check / open / new-block (Node, no dependencies)
+└── evals/                eval prompts and trigger queries
+tools/                    install.sh, validate.py, new_skill.py
+templates/skill/          scaffold for new skills
+AUTHORING.md              skill-writing guide and review checklist
+```
+
+## Develop
 
 ```bash
-mkdir -p ~/.claude/skills
+node skills/summarize-in/scripts/build.mjs skills/summarize-in/assets/examples/demo.html
+node skills/summarize-in/scripts/check.mjs skills/summarize-in/assets/examples/demo.html --pdf /tmp/demo.pdf
+python3 tools/validate.py skills --strict        # spec + portability lint
+python3 tools/new_skill.py my-skill --description "Use this skill when …"
 ```
 
-```bash
-ln -s ~/Code/one-pager/.agents/skills/one-pager ~/.claude/skills/one-pager
-```
+Keep skills harness-agnostic:
 
-### Codex and GitHub Copilot
+- Use only spec frontmatter fields.
+- Write plain verbs ("run", "read") instead of naming a harness's tools.
+- Make paths relative to the skill root.
+- Make scripts non-interactive.
 
-Both read personal skills from `~/.agents/skills`, so one link covers both:
+See [AUTHORING.md](AUTHORING.md) for the full checklist. Skill folder locations per
+harness:
 
-```bash
-mkdir -p ~/.agents/skills
-```
+| Harness | Project | User |
+| --- | --- | --- |
+| Cross-tool convention | `.agents/skills/` | `~/.agents/skills/` |
+| Claude Code | `.claude/skills/` | `~/.claude/skills/` |
+| OpenAI Codex | `.agents/skills/` | `$CODEX_HOME/skills/` |
+| GitHub Copilot | `.github/skills/` | `~/.copilot/skills/` |
+| Gemini CLI | `.gemini/skills/` | `~/.gemini/skills/` |
+| Cursor | `.cursor/skills/` | `~/.cursor/skills/` |
+| OpenCode | `.opencode/skills/` | `~/.config/opencode/skills/` |
 
-```bash
-ln -s ~/Code/one-pager/.agents/skills/one-pager ~/.agents/skills/one-pager
-```
-
-Copilot reads personal skills in the Copilot CLI and the cloud coding agent.
-VS Code agent mode has been rolling out support; if the skill doesn't show up
-there, install it into the project instead (below).
-
-### ChatGPT
-
-ChatGPT takes skills as an uploaded zip. Skills are a beta there, so a workspace
-owner may need to turn them on first.
-
-```bash
-cd ~/Code/one-pager/.agents/skills && zip -rq ~/Downloads/one-pager.zip one-pager -x '*.DS_Store'
-```
-
-Then in ChatGPT go to **Skills → Create → Upload from your computer** and pick
-`~/Downloads/one-pager.zip`. ChatGPT runs the skill in its own sandbox, so the
-page comes back as a download link rather than a file in your repo.
-
-### For one project only
-
-To share the skill with everyone working in a repo, copy it into that repo
-instead of your home folder. Use the folder for your tool:
-
-| Tool | Project folder |
-|---|---|
-| Claude Code | `.claude/skills/` |
-| Codex | `.agents/skills/` |
-| Copilot | `.agents/skills/`, `.github/skills/`, or `.claude/skills/` |
-
-```bash
-mkdir -p .agents/skills
-```
-
-```bash
-cp -R ~/Code/one-pager/.agents/skills/one-pager .agents/skills/
-```
-
-`.agents/skills/` covers Codex and Copilot. For Claude Code as well, copy it to
-`.claude/skills/` too, or symlink it the way this repo does. Copies don't pick
-up updates; copy again to refresh.
-
-### Check it worked
-
-Start a new session in your tool (skills load at startup) and look for
-`one-pager` in its skill list: `/` in Claude Code, `/skills` in Codex,
-`copilot skill list` in Copilot CLI. Or run the checker on the bundled example:
-
-```bash
-node ~/Code/one-pager/.agents/skills/one-pager/check.mjs ~/Code/one-pager/.agents/skills/one-pager/examples/dns.html
-```
-
-It should end with `OK`.
-
-## Uninstall
-
-Remove the links (this leaves the clone alone):
-
-```bash
-rm ~/.claude/skills/one-pager
-```
-
-```bash
-rm ~/.agents/skills/one-pager
-```
-
-In ChatGPT, delete the skill from the Skills page. For a project copy, delete
-the skill folder in that project.
-
-## What's in the skill
-
-| File | Purpose |
-|---|---|
-| `SKILL.md` | Instructions the agent follows when the skill runs |
-| `template.html` | Starting layout with light, dark, and print styles |
-| `fonts.mjs` | Embeds the fonts into a finished page as base64 |
-| `fonts.py` | Same as `fonts.mjs`, for sandboxes without Node |
-| `diagram.mjs` | Renders Mermaid diagrams to inline SVG in the site palette (needs Chrome; downloads Mermaid once to `~/.cache/one-pager/`) |
-| `check.mjs` | Fails a page that loads from the network, has leftover placeholders, or prints as more than one page |
-| `fonts/` | Schibsted Grotesk and Geist Mono (latin subset) |
-| `examples/dns.html` | A finished one-pager |
-
-`.claude/skills/one-pager` in this repo is a symlink to `.agents/skills/one-pager`,
-so Claude Code, Codex, and Copilot all find the skill when you work in this repo.
-On Windows, enable symlinks in Git (`git config core.symlinks true`) or the link
-checks out as a plain text file.
-
-## Fonts
-
-Schibsted Grotesk and Geist Mono are licensed under the SIL Open Font License
-1.1, which allows bundling and redistribution. The license texts ship with the
-fonts in [`fonts/`](.agents/skills/one-pager/fonts/).
+These locations change as tools evolve. If yours differs, edit the tables in
+`tools/install.sh`.

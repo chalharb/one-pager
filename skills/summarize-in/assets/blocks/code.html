@@ -1,0 +1,32 @@
+<!--
+@block code
+@use Code, commands, or config with build-time syntax highlighting (no JavaScript in the output). Languages: js, ts, jsx, tsx, json, py, sh/bash/shell, yaml, http (headers), toml/ini, html/xml, css, sql, go, rust, java, c, cpp, csharp, swift, kotlin, ruby, php, diff, dockerfile, text.
+@options data-lang on <code> picks the highlighter. Optional <figcaption class="si-code__label"> for a filename. Long lines wrap rather than scroll, so what you see is what prints. Write code as plain escaped text; the build adds the colour spans.
+-->
+<style>
+.si-code { margin: 0; position: relative; background: var(--si-sand); border-radius: 6px; break-inside: avoid; min-width: 0; }
+.si-code__label {
+  position: absolute; top: 6px; right: 10px;
+  font: 500 9.5px/1 var(--si-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--si-muted);
+}
+.si-code pre {
+  margin: 0; padding: 11px 14px;
+  font: 12px/1.6 var(--si-mono); color: var(--si-ink);
+  white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 2;
+}
+.si-code:has(.si-code__label) pre { padding-top: 20px; }
+.si-code code { font: inherit; background: none; padding: 0; }
+.si-code .t-k { color: var(--si-syn-kw); }
+.si-code .t-s { color: var(--si-syn-str); }
+.si-code .t-c { color: var(--si-syn-com); font-style: italic; }
+.si-code .t-n { color: var(--si-syn-num); }
+.si-code .t-f { color: var(--si-syn-fn); }
+.si-code .t-a { color: var(--si-syn-attr); }
+.si-code .t-ins { color: var(--si-green); }
+.si-code .t-del { color: var(--si-red); }
+</style>
+
+<figure class="si-code" data-block="code">
+  <figcaption class="si-code__label">install.sh</figcaption>
+  <pre><code data-lang="bash">npx skills add example/summarize-in -g   # installs for every harness</code></pre>
+</figure>

@@ -1,0 +1,26 @@
+{
+  "train": [
+    { "query": "summarize-in 2 pages how edge networks function", "should_trigger": true },
+    { "query": "make me a one-pager on our auth architecture", "should_trigger": true },
+    { "query": "can you turn this RFC into a printable 1 page brief", "should_trigger": true },
+    { "query": "I need a cheat sheet for kubectl I can print", "should_trigger": true },
+    { "query": "summarize the research in this chat into a page I can share in slack", "should_trigger": true },
+    { "query": "summarize this PR in two sentences", "should_trigger": false },
+    { "query": "write a README for this repo", "should_trigger": false },
+    { "query": "make a slide deck about our roadmap", "should_trigger": false },
+    { "query": "print the contents of config.yaml", "should_trigger": false },
+    { "query": "give me a tl;dr of that error log", "should_trigger": false }
+  ],
+  "validation": [
+    { "query": "two-page overview of vector databases as an html file", "should_trigger": true },
+    { "query": "fact sheet about the new pricing, one page", "should_trigger": true },
+    { "query": "summarize-in 3 pages the design doc in docs/", "should_trigger": true },
+    { "query": "a printable reference card for our CLI flags", "should_trigger": true },
+    { "query": "boil down what we decided today onto a single page", "should_trigger": true },
+    { "query": "summarize the meeting notes as bullet points in chat", "should_trigger": false },
+    { "query": "convert this markdown to PDF", "should_trigger": false },
+    { "query": "write a blog post about edge networks", "should_trigger": false },
+    { "query": "create a Word document resume", "should_trigger": false },
+    { "query": "explain how CDNs work", "should_trigger": false }
+  ]
+}
