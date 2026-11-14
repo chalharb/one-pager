@@ -1,0 +1,26 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Shared files are in sync
+        run: node scripts/sync.mjs --check
+      - name: Examples pass the checker
+        run: |
+          status=0
+          for skill in .agents/skills/*/; do
+            for page in "$skill"examples/*.html; do
+              node "$skill"check.mjs "$page" || status=1
+            done
+          done
+          exit $status

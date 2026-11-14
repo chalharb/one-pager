@@ -1,0 +1,13 @@
+<!-- snippet
+name: link list
+use: Repos, sites, dashboards and docs to visit.
+fits: directory section, narrow column
+limit: 2-8 links per list
+notes: Link text is the resource name, never a URL. The .url line is for paper: host + meaningful path, no https://, query strings or /Forms/AllItems.aspx; "…/rest/of/path" when the host is shown above it. Never invent a URL: leave the entry out instead.
+-->
+      <section>
+        <h2>{{GROUP}}</h2>
+        <ul class="links">
+          <li><a href="{{URL}}">{{NAME}}</a> <span class="note">{{WHAT_IT_IS_FOR}}</span><span class="url">{{SHORT_URL}}</span></li>
+        </ul>
+      </section>

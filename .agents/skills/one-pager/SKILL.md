@@ -6,9 +6,12 @@ description: Generate a "one-pager" — a single self-contained HTML file that e
 # one-pager
 
 Turn any subject into one self-contained `.html` file that reads well on
-screen and prints as exactly one Letter page. The skill is a template
-(`template.html`), a worked example (`examples/dns.html`), a font embedder
-(`fonts.mjs`), and a checker (`check.mjs`) that enforces the rules below.
+screen and prints as exactly one Letter page. The skill is a page frame
+with every style already in it (`template.html`), a catalogue of shells and
+blocks to build the page from (`snippets/`), two worked examples
+(`examples/`), diagram and chart renderers (`diagram.mjs`, `chart.mjs`), a
+font embedder (`fonts.mjs`), and a checker (`check.mjs`) that enforces the
+rules below. For more than one page, use the summarize-in skill.
 
 `<skill-dir>` below means the folder that contains this `SKILL.md`. Resolve
 it to a real path before running anything; do not assume a location such
@@ -42,19 +45,23 @@ as `.claude/skills` or `.agents/skills`.
      link to the file.
    - A path the user names always wins.
 
-   Copy `<skill-dir>/template.html` to that path and replace every
-   `{{PLACEHOLDER}}`. Reshape the sections to fit the subject; the
-   template's layout is a starting point.
-5. **Render diagrams, if any.** Skip this if the page has none.
+   Copy `<skill-dir>/template.html` to that path, then build the page
+   from `<skill-dir>/snippets/` as described in **Building the page**
+   below: one shell, then the blocks that suit the content. Replace every
+   `{{PLACEHOLDER}}`.
+5. **Render the figure, if any.** Skip this if the page has none.
 
    ```bash
-   node <skill-dir>/diagram.mjs <output.html>
+   node <skill-dir>/diagram.mjs <output.html>   # Mermaid diagram
+   node <skill-dir>/chart.mjs <output.html>     # data chart
    ```
 
-   It replaces each `<pre class="mermaid">` block with an inline SVG and
-   keeps the source in a `data-mermaid` attribute, so edit that and re-run
-   to change a diagram. It needs Chrome; without it, cut the diagram.
-6. **Embed the fonts.** Do this last, after the content is final.
+   Each replaces its `<pre>` block with an inline SVG and keeps the source
+   in a `data-` attribute, so edit that and re-run to change it.
+   `diagram.mjs` needs Chrome; without it, cut the diagram. `chart.mjs`
+   needs only Node.
+6. **Embed the fonts.** Do this last, after the content is final. It also
+   inlines any `custom.css` for custom blocks.
 
    ```bash
    node <skill-dir>/fonts.mjs <output.html>
@@ -78,6 +85,98 @@ as `.claude/skills` or `.agents/skills`.
    one-page print check was not run.
 8. **Hand it over.** Give the user the file path (or download link) and one
    line on what the page covers. Mention any fact you could not verify.
+
+## Building the page
+
+`template.html` is the frame: the stylesheet, the header (kicker, title,
+lede) and the footer. Between them is a `<!-- @main -->` marker. Run
+
+```bash
+node <skill-dir>/index.mjs
+```
+
+It prints every shell and block, built-in and custom, with when to use it
+and the file to open (without Node, read `<skill-dir>/snippets/INDEX.md`,
+which lists the built-in ones). Open only the files you pick. Fill the
+frame in this order.
+
+1. **Pick one shell** and paste it at the marker, replacing the comment.
+   - **Explainer** (`<main>`): the reader wants to *understand* something.
+     A wide column for the explanation and a narrow one for reference
+     material. Most topics. `examples/dns.html`.
+   - **Directory** (`<main class="directory">`): the reader wants to *find*
+     things, such as links to repos, Terraform workspaces, SharePoint sites,
+     dashboards and runbooks, and the people to contact. Sections flow down
+     two balanced columns. Cheat sheets, "where everything lives" pages,
+     team directories. `examples/directory.html`.
+2. **Fill it with blocks.** Each block in the index says when to use
+   it, where it fits, and its limit. Paste the markup only, without the
+   header comment, and repeat `<li>`, `<tr>` or `<section>` as needed.
+3. **Full-width blocks** (stat row, comparison table) go between the header
+   and the shell. In the directory shell, a comparison or contacts table
+   goes in a `<section class="span">` instead.
+
+The index ends with a short guide to choosing between similar blocks
+(comparison or facts, steps or point list, chart or stat row).
+
+Composition rules:
+
+- **Fewer kinds of block is better.** Use at most five kinds besides
+  paragraphs. A block that adds nothing makes the page worse.
+- **Don't write CSS.** Every block is already styled for light, dark and
+  print. Don't add `style` attributes, new colours or new classes; the
+  checker fails the first two. If nothing fits, use a plain paragraph or
+  list, and tell the user which block was missing; they can add it as a
+  custom block (see **Custom blocks**).
+- **Group by what the reader looks for.** In a directory, group by kind
+  (Code, Infrastructure, Docs, People) or by system: two to six groups,
+  each a section with an `<h2>`.
+
+Rules for links and contacts (any shell):
+
+- **Link text is a name, never a URL.** Readers scan for names.
+- **The short URL is for paper.** Printed links can't be clicked, so the
+  `.url` line shows where each one goes: host plus the meaningful path
+  (`github.contoso.com/payments/ledger`,
+  `contoso.sharepoint.com/sites/Payments`). Drop `https://`, query strings,
+  and noise such as `/Forms/AllItems.aspx` or `?csf=1&web=1`. Under a host
+  already shown above it, `…/sites/Payments/Runbooks` is enough.
+- **Never invent a link or a contact.** Use only URLs, names, roles and
+  addresses the user gave you or that you read from a source. If one is
+  missing, leave the entry out and say so in the hand-over. The checker
+  fails an empty or `#` href.
+
+What changes in the directory shell:
+
+- **No word target.** Measure in entries: about 15–30 links and up to
+  about 10 contacts fit. The lede is one sentence or two short ones.
+- **Kicker is `<Team or system> · Cheat sheet`.**
+- **Footer**: the owning team on the left, and on the right the month
+  and year the links were last checked (`Links checked November 2026`),
+  because this kind of page goes stale.
+- **When it overflows**, cut the descriptions first, then the least-used
+  links, and ask the user which to drop if it still does not fit. If the
+  content really needs two pages, say so; do not shrink the type.
+
+## Custom blocks
+
+Users can add their own blocks and shells outside this folder, so they
+survive skill updates:
+
+- **Project:** `.one-pager/snippets/blocks/` (and `shells/`) at or above the
+  working directory, shared with the team through git.
+- **User:** `~/.config/one-pager/snippets/blocks/`, or `$ONE_PAGER_HOME`.
+
+`index.mjs` lists them with the built-in ones (a custom snippet with a
+built-in's name replaces it), and `fonts.mjs` inlines any `custom.css` from
+the same folders. Use custom blocks exactly like built-in ones.
+
+When the user asks you to add a block, run
+`node <skill-dir>/new-block.mjs "<name>"` (add `--project` or `--user` to
+choose where), then fill in its header and markup. Put any new styles in the
+`custom.css` it names, using palette variables such as `var(--ember)`;
+never in the page. Run `index.mjs` afterwards: it warns about unfinished
+headers.
 
 ## Delegating (optional)
 
@@ -110,7 +209,9 @@ writing.
 - **One printed page.** The checker prints the file with headless Chrome
   and fails if the PDF is not exactly one page. When it overflows, cut
   words. Do not shrink the type or the margins.
-- **About 300–450 words** of body text. The DNS example is 374.
+- **About 300–450 words** of body text in the explainer shell. The DNS
+  example is about 330. The directory shell is measured in entries
+  instead (see **Building the page**).
 - **Lead with the point.** Kicker, title, lede, then the detail.
 - **Kicker is `<Field> · One-pager`.** The field is the broad area the
   topic sits in, in two or three words: `Web platforms · One-pager`,
@@ -126,15 +227,17 @@ writing.
   words, `flowchart LR` or `sequenceDiagram`. It goes in the wide column
   next to the text it illustrates, and it replaces words rather than
   repeating them. No styling, colours, or `classDef` in the source; the
-  renderer applies the palette. One diagram per page at most.
-- **Two columns of different jobs.** The wide column carries the
+  renderer applies the palette. One figure per page at most: a diagram
+  or a chart, not both. A chart follows the same rule as the stat row:
+  only when the numbers are the point, every value sourced.
+- **Two columns of different jobs** (explainer shell). The wide column carries the
   explanation; the narrow one carries reference material (definitions,
   key terms, steps, a takeaway callout).
 - **Fixed palette.** The colours are the Blueprint palette from the
   loganharber.com redesign: `--paper` behind the page, `--raised` for the
   page, `--sand` for tiles and callouts, `--ember-text` for accent text,
   `--ember` for accent rules, `--cobalt` for links. Do not recolour per
-  topic and do not add colours outside it.
+  topic and do not add colours outside it; the checker fails any.
 - **Plain language.** Short sentences, concrete nouns, no filler, no
   lorem ipsum. Bold the first few words of a list item only when it
   names the item.
@@ -153,7 +256,10 @@ node <skill-dir>/check.mjs <skill-dir>/examples/dns.html
 
 It exits 1 and lists each problem when the file has no doctype, title,
 viewport tag, or print rules; has leftover `{{PLACEHOLDERS}}`; has an
-unrendered Mermaid block; has not had its fonts embedded; loads anything over the network; is larger than
+unrendered Mermaid block; has not had its fonts embedded; has no
+`<main>` shell or leftover catalogue comments; has a `style` attribute or a
+colour outside the palette; has a link with an empty or `#` href; loads
+anything over the network; is larger than
 500 KB; or prints as more or fewer than one page.
 
 Flags: `--shot out.png` saves a screenshot, `--pdf out.pdf` keeps the
@@ -176,8 +282,11 @@ printed PDF.
   Edge in the usual macOS and Linux locations, or `CHROME_BIN`. Without
   one, the print check is reported as `SKIPPED` and the other checks
   still run, so say that the page length was not verified.
-- **The palette is written three times** (light, dark, print). If the
-  site's palette changes, update all three blocks in `template.html`.
+- **Don't edit the shared files in this folder.** In the source repo, the
+  stylesheet, scripts, fonts and `snippets/` live in `shared/` and are
+  copied into every skill by `scripts/sync.mjs`. Change them there and
+  re-run it. The palette appears in `shared/style.css` (light, dark and
+  print) and in the `PALETTE` list in `shared/check.mjs`.
 - **Wide diagrams shrink their text.** The SVG scales down to fit the
   column, so a diagram with many side-by-side nodes ends up with tiny
   labels. If a rendered diagram's text looks smaller than the body text,

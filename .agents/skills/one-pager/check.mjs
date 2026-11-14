@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-// Validate a one-pager: self-contained, filled in, and exactly one printed page.
+// Validate a page: self-contained, filled in, on-palette, and exactly the right
+// number of printed pages. The count comes from <meta name="op-pages" content="N">
+// (1 when absent, as for a one-pager).
 //
 //   node check.mjs <file.html> [--shot out.png] [--pdf out.pdf]
 //
@@ -11,6 +13,7 @@ import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { findChrome, headlessArgs } from './chrome.mjs';
 
 const args = process.argv.slice(2);
 const opt = (name) => {
@@ -49,7 +52,31 @@ check(
 const placeholders = [...new Set(html.match(/\{\{[A-Z0-9_]+\}\}/g) ?? [])];
 check(placeholders.length === 0, `unfilled placeholders: ${placeholders.join(', ')}`);
 check(!/lorem ipsum/i.test(html), 'contains lorem ipsum filler');
+// No drift from the shared stylesheet: no inline styles, no colours outside the
+// palette. Rendered diagrams (<svg>) and the embedded font block are exempt.
+const PALETTE = new Set([
+  '#f5f3ee', '#ffffff', '#fff', '#e9e3d5', '#16181d', '#585e6a', '#dcd8ce', '#c4401a', '#b23a12', '#2c55c9',
+  '#0f1013', '#1c1f25', '#2a2620', '#eceae4', '#a1a6b0', '#2a2e36', '#ff6b3d', '#ff8a63', '#7c9cff',
+]);
+const own = html
+  .replace(/<svg[\s\S]*?<\/svg>/gi, '')
+  .replace(/<!-- @fonts:start[\s\S]*?@fonts:end -->/, '');
+const inlineStyles = (own.replace(/<style[\s\S]*?<\/style>/gi, '').match(/<[a-z][^>]*\sstyle\s*=/gi) ?? []).length;
+check(inlineStyles === 0, `${inlineStyles} element(s) with a style attribute: use the blocks in snippets/, which are already styled`);
+const offPalette = [...new Set(
+  ((own.match(/<style[\s\S]*?<\/style>/gi) ?? []).join('')
+    .match(/#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?)\([^)]*\)/gi) ?? [])
+    .map((c) => c.toLowerCase())
+    .filter((c) => !PALETTE.has(c)),
+)];
+check(offPalette.length === 0, `colours outside the palette: ${offPalette.join(', ')}`);
+check(/<main\b/i.test(own.replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<!--[\s\S]*?-->/g, '')), 'no <main>: paste a shell from snippets/shells/ at the <!-- @main --> marker');
+check(!/<!-- snippet\b|<!-- @main/.test(html), 'leftover snippet header or @main marker comment: paste only the markup below a snippet\'s header');
+
+const deadLinks = html.match(/<a\b[^>]*\bhref=["']\s*#?\s*["']/gi) ?? [];
+check(deadLinks.length === 0, `${deadLinks.length} link(s) with an empty or "#" href: use the real URL or remove the entry`);
 check(!/<pre class="mermaid">/.test(html), 'unrendered mermaid diagram: run diagram.mjs on this file');
+check(!/<pre class="chart">/.test(html), 'unrendered chart: run chart.mjs on this file');
 check(!html.includes('<!-- @fonts -->'), 'fonts not embedded: run fonts.mjs on this file');
 check(/<!-- @fonts:start/.test(html) || html.includes('<!-- @fonts -->'), 'no font block: restore the <!-- @fonts --> marker before </body> and run fonts.mjs');
 
@@ -65,16 +92,11 @@ check(external.length === 0, `loads external resources: ${[...new Set(external)]
 const kb = statSync(file).size / 1024;
 check(kb <= 500, `file is ${kb.toFixed(0)} KB (limit 500 KB)`);
 
-// --- Print check: must be exactly one page ---------------------------------
-const chrome = [
-  process.env.CHROME_BIN,
-  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-  '/Applications/Chromium.app/Contents/MacOS/Chromium',
-  '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
-  '/usr/bin/google-chrome',
-  '/usr/bin/chromium',
-  '/usr/bin/chromium-browser',
-].find((p) => p && existsSync(p));
+// --- Print check: must be exactly the declared number of pages -------------
+const pagesMeta = html.match(/<meta[^>]+name=["']op-pages["'][^>]*content=["']([^"']*)["']/i)?.[1];
+const want = pagesMeta === undefined ? 1 : Number(pagesMeta);
+check(Number.isInteger(want) && want >= 1 && want <= 4, `<meta name="op-pages"> must be a whole number from 1 to 4, not "${pagesMeta}"`);
+const chrome = findChrome();
 
 let pages = null;
 if (!chrome) {
@@ -85,7 +107,7 @@ if (!chrome) {
   const run = (extra) =>
     execFileSync(
       chrome,
-      ['--headless=new', '--disable-gpu', '--hide-scrollbars', `--user-data-dir=${join(tmp, 'profile')}`, ...extra, url],
+      [...headlessArgs(), '--hide-scrollbars', `--user-data-dir=${join(tmp, 'profile')}`, ...extra, url],
       { stdio: 'ignore', timeout: 60_000 },
     );
   try {
@@ -93,7 +115,12 @@ if (!chrome) {
     run([`--print-to-pdf=${pdf}`, '--no-pdf-header-footer']);
     // Count page objects; "/Type /Pages" (the tree root) must not match.
     pages = (readFileSync(pdf, 'latin1').match(/\/Type\s*\/Page(?![a-zA-Z])/g) ?? []).length;
-    check(pages === 1, `prints as ${pages} pages; a one-pager must print as exactly 1 — cut content`);
+    check(
+      pages === want,
+      pages > want
+        ? `prints as ${pages} pages; it must print as exactly ${want} — cut content`
+        : `prints as ${pages} page(s); it must print as exactly ${want} — add depth or lower op-pages`,
+    );
     if (pdfPath) notes.push(`pdf: ${pdf}`);
     if (shotPath) {
       const shot = resolve(shotPath);

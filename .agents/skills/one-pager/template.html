@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{TITLE}}</title>
 <style>
+  /* @shared-css:start (from shared/style.css; edit there, then run scripts/sync.mjs) */
   :root {
     color-scheme: light dark;
   /* Blueprint palette, from the loganharber.com redesign. Do not change per topic. */
@@ -70,7 +71,7 @@
   .stat { background: var(--sand); border-radius: 6px; padding: 10px 12px; }
   .stat b {
     display: block; font: 600 22px/1.15 var(--sans); letter-spacing: -.015em;
-    color: var(--ember-text); font-variant-numeric: tabular-nums;
+    color: var(--ember-text);
   }
   .stat span { font-size: 11.5px; color: var(--muted); line-height: 1.3; display: block; }
 
@@ -81,12 +82,19 @@
     color: var(--muted); border-bottom: 1px solid var(--line);
     padding-bottom: 4px; margin-bottom: 8px;
   }
-  p + p { margin-top: 8px; }
+  p + p, p + ul, p + ol, ul + p, ol + p, dl + p { margin-top: 8px; }
   ul, ol { padding-left: 18px; }
   li + li { margin-top: 4px; }
   li::marker { color: var(--ember-text); }
   strong { font-weight: 600; }
   a { color: var(--cobalt); text-underline-offset: 2px; }
+  code { font: .9em var(--mono); background: var(--sand); padding: 1px 4px; border-radius: 3px; }
+  pre {
+    font: 11.5px/1.45 var(--mono); background: var(--sand); border-radius: 6px;
+    padding: 8px 10px; white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  pre code { font: inherit; background: none; padding: 0; }
+  * + pre, pre + * { margin-top: 8px; }
 
   .diagram { margin: 4px 0 0; }
   .diagram svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
@@ -99,6 +107,26 @@
   dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; }
   dt { color: var(--muted); }
   dd { font-weight: 600; }
+  dl.terms dt { font: 600 .96em var(--mono); color: var(--ember-text); }
+  dl.terms dd { font-weight: 400; }
+
+  table { width: 100%; border-collapse: collapse; font-size: .93em; }
+  th {
+    font: 500 10px var(--mono); letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); text-align: left; padding: 0 10px 4px 0;
+  }
+  td { padding: 4px 10px 4px 0; border-top: 1px dotted var(--line); vertical-align: top; }
+  .compare td:first-child { color: var(--muted); }
+  .wide { margin: 0 0 18px; }
+
+  .timeline { list-style: none; padding: 0 0 0 14px; border-left: 2px solid var(--line); }
+  .timeline li { position: relative; }
+  .timeline li + li { margin-top: 6px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: -19px; top: .5em;
+    width: 8px; height: 8px; border-radius: 50%; background: var(--ember);
+  }
+  .timeline .when { display: block; font: 500 10.5px var(--mono); color: var(--ember-text); }
 
   footer {
     margin-top: 20px; padding-top: 10px; border-top: 1px solid var(--line);
@@ -106,13 +134,74 @@
     font: 10.5px var(--mono); color: var(--muted);
   }
 
+  /* Every snippet in snippets/ is styled here, so pasted snippets need no CSS.
+     Directory shell: <main class="directory">. Sections flow down two balanced
+     columns; class="span" on a section runs it full width. */
+  main.directory { display: block; columns: 2; column-gap: 28px; }
+  main.directory section { break-inside: avoid; margin: 0 0 16px; }
+  main.directory section + section { margin-top: 0; }
+  main.directory section.span { column-span: all; margin-top: 8px; }
+  .links { list-style: none; padding: 0; }
+  .links li { padding: 4px 0; border-bottom: 1px dotted var(--line); }
+  .links li + li { margin-top: 0; }
+  .links li:last-child { border-bottom: 0; }
+  .links a { font-weight: 500; }
+  .links .note { color: var(--muted); font-size: .93em; }
+  .links .url, .contacts .reach {
+    display: block; font: 10.5px/1.35 var(--mono); color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+  .contacts td:first-child { font-weight: 600; }
+  .contacts .reach { display: inline; font-size: 11px; }
+
+  /* Report shell: <main class="report"> for pages with several figures, usually
+     over more than one printed page. A stack of .row blocks (wide + narrow
+     column, or .even halves) with full-width figures and tables between them. */
+  main.report { display: block; }
+  main.report > * + * { margin-top: 18px; }
+  .row { display: grid; grid-template-columns: 1.55fr 1fr; gap: 28px; }
+  main > *, .row > * { min-width: 0; } /* let wide content scroll, not stretch the page */
+  .row.even { grid-template-columns: 1fr 1fr; }
+  .page-break { break-before: page; }
+
+  /* Charts, rendered to inline SVG by chart.mjs. Text in the SVG is in CSS px
+     at print size; series take cobalt then ember, never more than two. */
+  .chart { margin: 0; }
+  * + .chart, * + .diagram { margin-top: 10px; }
+  .chart svg { display: block; width: 100%; height: auto; font-family: var(--sans); overflow: visible; }
+  .chart .s1 { fill: var(--cobalt); }
+  .chart .s2 { fill: var(--ember); }
+  .chart .l1, .chart .l2 { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .chart .l1 { stroke: var(--cobalt); }
+  .chart .l2 { stroke: var(--ember); }
+  .chart .ring { stroke: var(--raised); stroke-width: 2; }
+  .chart .grid { stroke: var(--line); stroke-width: 1; }
+  .chart .base { stroke: var(--muted); stroke-width: 1; }
+  .chart .t { fill: var(--ink); font-size: 11px; }
+  .chart .tv { fill: var(--ink); font-size: 11px; font-weight: 600; }
+  .chart .tm { fill: var(--muted); font-size: 10.5px; }
+  .chart figcaption { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .chart figcaption strong { color: var(--ink); }
+  .chart-data { margin-top: 4px; font-size: 12px; }
+  .chart-data summary { cursor: pointer; color: var(--muted); font: 10.5px var(--mono); }
+
   @media (max-width: 640px) {
     .page { padding: 24px 20px; }
     h1 { font-size: 27px; }
     main { grid-template-columns: 1fr; gap: 16px; }
+    main.directory { columns: 1; }
+    .row, .row.even { grid-template-columns: 1fr; gap: 16px; }
+    /* Keep chart text legible on phones: scroll wide charts sideways instead. */
+    .chart { overflow-x: auto; }
+    .chart svg { min-width: 480px; }
+    .contacts thead { display: none; }
+    .contacts tr { display: block; padding: 6px 0; border-top: 1px dotted var(--line); }
+    .contacts td { display: inline; border: 0; padding: 0 8px 0 0; }
+    .contacts td:first-child { display: block; }
+    .contacts .reach { display: block; }
   }
 
-  /* Print: exactly one Letter page, always the light palette. */
+  /* Print: Letter pages, always the light palette. The page count is per skill. */
   @page { size: Letter; margin: 0.45in; }
   @media print {
     :root {
@@ -123,9 +212,11 @@
     body { padding: 0; font-size: 12.5px; }
     .page { max-width: none; border: 0; border-radius: 0; padding: 0; }
     main { grid-template-columns: 1.55fr 1fr; }
-    section, .stat, .callout, .diagram { break-inside: avoid; }
+    section, .stat, .callout, .diagram, .chart, pre, tr { break-inside: avoid; }
+    .chart-data { display: none; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
+  /* @shared-css:end */
 </style>
 </head>
 <body>
@@ -136,51 +227,8 @@
     <p class="lede">{{LEDE}}</p>
   </header>
 
-  <!-- OPTIONAL stat row: delete this whole block unless 2-4 numbers are central to the topic. -->
-  <div class="stats">
-    <div class="stat"><b>{{STAT_1}}</b><span>{{STAT_1_LABEL}}</span></div>
-    <div class="stat"><b>{{STAT_2}}</b><span>{{STAT_2_LABEL}}</span></div>
-    <div class="stat"><b>{{STAT_3}}</b><span>{{STAT_3_LABEL}}</span></div>
-    <div class="stat"><b>{{STAT_4}}</b><span>{{STAT_4_LABEL}}</span></div>
-  </div>
-
-  <main>
-    <div>
-      <section>
-        <h2>{{SECTION_A}}</h2>
-        <!-- OPTIONAL diagram: only when a flow or structure is clearer drawn than written.
-             Write Mermaid in a pre element with class "mermaid", then run diagram.mjs. -->
-        <p>{{BODY_A}}</p>
-      </section>
-      <section>
-        <h2>{{SECTION_B}}</h2>
-        <ul>
-          <li><strong>{{POINT}}</strong> {{DETAIL}}</li>
-        </ul>
-      </section>
-      <section>
-        <h2>{{SECTION_C}}</h2>
-        <p>{{BODY_C}}</p>
-      </section>
-    </div>
-    <aside>
-      <section>
-        <h2>{{SIDE_A}}</h2>
-        <dl>
-          <dt>{{TERM}}</dt><dd>{{VALUE}}</dd>
-        </dl>
-      </section>
-      <section>
-        <h2>{{SIDE_B}}</h2>
-        <ol>
-          <li>{{STEP}}</li>
-        </ol>
-      </section>
-      <section>
-        <div class="callout">{{TAKEAWAY}}</div>
-      </section>
-    </aside>
-  </main>
+  <!-- @main: paste one shell from snippets/ here (see snippets/INDEX.md), then fill it with blocks.
+       Full-width blocks (stat row, comparison table) go above the shell. -->
 
   <footer>
     <span>{{SOURCES}}</span>

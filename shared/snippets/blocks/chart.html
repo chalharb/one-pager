@@ -1,0 +1,17 @@
+<!-- snippet
+name: chart
+use: Sourced amounts (bar) or change across an ordered scale (line).
+fits: wide column, half of row even, full width
+limit: 1-2 series; bar 2-8 bars; line 3-12 points
+notes: Never in a narrow column. Set "width" to where it sits: omit for a wide column, "half", or "full". The title states the takeaway. Every value needs a source; a computed series says how in "source". One axis only. Keys: type, title, labels, series [{name, values}], unit, source, width, yMin. Run chart.mjs to render.
+-->
+      <pre class="chart">
+{
+  "type": "bar",
+  "title": "{{TAKEAWAY}}",
+  "labels": ["{{LABEL_A}}", "{{LABEL_B}}"],
+  "series": [{ "name": "{{SERIES}}", "values": [0, 0] }],
+  "unit": "{{UNIT}}",
+  "source": "{{SOURCE}}"
+}
+      </pre>
