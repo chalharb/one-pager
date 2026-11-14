@@ -77,7 +77,8 @@ the topic is truly ambiguous.
    `chart.mjs` needs only Node. `diagram.mjs` needs Chrome; without it, swap
    the diagram for a list or a chart. Both keep the source in a `data-`
    attribute, so edit that and re-run to change a figure.
-6. **Embed the fonts.** Do this last, after the content is final.
+6. **Embed the fonts.** Do this last, after the content is final. It also
+   inlines any `custom.css` for custom blocks.
 
    ```bash
    node <skill-dir>/fonts.mjs <output.html>
@@ -109,9 +110,10 @@ across a page break. To start something on a fresh page, add `page-break`
 to that row's class. Use it at most once per page break, only when a page
 would otherwise end on an orphaned heading or a big gap.
 
-Read `<skill-dir>/snippets/INDEX.md` to choose blocks: it lists every block
-with when to use it, where it fits and its limit, and ends with a guide to
-choosing between similar ones. Then open only the files you picked; each
+Run `node <skill-dir>/index.mjs` to choose blocks: it lists every block,
+built-in and custom, with when to use it, where it fits and its limit, and
+ends with a guide to choosing between similar ones (without Node, read
+`<skill-dir>/snippets/INDEX.md`, which lists the built-in ones). Then open only the files you picked; each
 starts with notes on filling it in. Paste the markup only, without the
 header comment.
 
@@ -151,6 +153,26 @@ header comment.
   `stateDiagram-v2`. No styling, colours or `classDef`; the renderer applies
   the palette.
 
+## Custom blocks
+
+Users can add their own blocks and shells outside this folder, so they
+survive skill updates:
+
+- **Project:** `.one-pager/snippets/blocks/` (and `shells/`) at or above the
+  working directory, shared with the team through git.
+- **User:** `~/.config/one-pager/snippets/blocks/`, or `$ONE_PAGER_HOME`.
+
+`index.mjs` lists them with the built-in ones (a custom snippet with a
+built-in's name replaces it), and `fonts.mjs` inlines any `custom.css` from
+the same folders. Use custom blocks exactly like built-in ones.
+
+When the user asks you to add a block, run
+`node <skill-dir>/new-block.mjs "<name>"` (add `--project` or `--user` to
+choose where), then fill in its header and markup. Put any new styles in the
+`custom.css` it names, using palette variables such as `var(--ember)`;
+never in the page. Run `index.mjs` afterwards: it warns about unfinished
+headers.
+
 ## Rules for the page
 
 - **One file, no network.** All CSS inline. No external scripts,
@@ -165,7 +187,8 @@ header comment.
 - **Don't write CSS.** Every block is already styled for light, dark and
   print. No `style` attributes, new colours or new classes; the checker
   fails the first two. If nothing fits, use a plain paragraph or list, and
-  tell the user which block was missing.
+  tell the user which block was missing; they can add it as a custom block
+  (see **Custom blocks**).
 - **Fixed palette.** The Blueprint palette from loganharber.com. Do not
   recolour per topic.
 - **Plain language.** Short sentences, concrete nouns, no filler. Bold the

@@ -6,10 +6,15 @@
 //
 // Replaces the `<!-- @fonts -->` marker before </body>. Safe to re-run: an
 // already-embedded block is replaced, not duplicated.
+//
+// Also inlines any custom.css from the user's and the page's project custom
+// roots (see snippets.mjs) in a marked block just before the fonts, so styles
+// for custom blocks travel with the page. The checker holds them to the palette.
 
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { customCss } from './snippets.mjs';
 
 const file = process.argv[2];
 if (!file || !existsSync(file)) {
@@ -40,5 +45,15 @@ else {
   console.error(`${file}: no <!-- @fonts --> marker found (put one just before </body>)`);
   process.exit(1);
 }
+html = html.replace(/<!-- @custom-css:start[\s\S]*?<!-- @custom-css:end -->\n?/, '');
+const custom = customCss(dirname(resolve(file)));
+if (custom.length) {
+  const rules = custom.map((c) => `/* ${c.source} custom.css */\n${readFileSync(c.path, 'utf8').trim()}`).join('\n');
+  const customBlock = `<!-- @custom-css:start (from custom.css; edit there, then re-run fonts.mjs) -->\n<style>\n${rules}\n</style>\n<!-- @custom-css:end -->\n`;
+  html = html.replace('<!-- @fonts:start', () => customBlock + '<!-- @fonts:start');
+}
 writeFileSync(file, html);
-console.log(`${file}: embedded ${faces.map((f) => f.family).join(' + ')} (${(css.length / 1024).toFixed(0)} KB)`);
+console.log(
+  `${file}: embedded ${faces.map((f) => f.family).join(' + ')} (${(css.length / 1024).toFixed(0)} KB)` +
+    (custom.length ? ` and ${custom.map((c) => `${c.source} custom.css`).join(' + ')}` : ''),
+);

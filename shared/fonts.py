@@ -3,8 +3,12 @@
 sandboxes without Node (e.g. ChatGPT). Output is byte-for-byte the same.
 
     python3 fonts.py <file.html>
+
+Also inlines any custom.css from the user's and the page's project custom roots,
+like fonts.mjs.
 """
 import base64
+import os
 import pathlib
 import re
 import sys
@@ -39,5 +43,37 @@ elif "<!-- @fonts -->" in html:
 else:
     sys.exit(f"{page}: no <!-- @fonts --> marker found (put one just before </body>)")
 
+# Custom CSS: user root, then the nearest .one-pager/ above the page (wins).
+def user_root():
+    if os.environ.get("ONE_PAGER_HOME"):
+        return pathlib.Path(os.environ["ONE_PAGER_HOME"]).resolve()
+    config = os.environ.get("XDG_CONFIG_HOME") or str(pathlib.Path.home() / ".config")
+    return pathlib.Path(config) / "one-pager"
+
+
+def project_root(start):
+    for d in [start, *start.parents]:
+        if (d / ".one-pager").is_dir():
+            return d / ".one-pager"
+    return None
+
+
+custom = []
+if user_root().exists() and (user_root() / "custom.css").is_file():
+    custom.append(("user", user_root() / "custom.css"))
+project = project_root(page.resolve().parent)
+if project and (project / "custom.css").is_file():
+    custom.append(("project", project / "custom.css"))
+
+html = re.sub(r"<!-- @custom-css:start[\s\S]*?<!-- @custom-css:end -->\n?", "", html, count=1)
+if custom:
+    rules = "\n".join(f"/* {src} custom.css */\n{path.read_text(encoding='utf-8').strip()}" for src, path in custom)
+    custom_block = (
+        "<!-- @custom-css:start (from custom.css; edit there, then re-run fonts.mjs) -->\n"
+        f"<style>\n{rules}\n</style>\n<!-- @custom-css:end -->\n"
+    )
+    html = html.replace("<!-- @fonts:start", custom_block + "<!-- @fonts:start", 1)
+
 page.write_text(html, encoding="utf-8")
-print(f"{page}: embedded {' + '.join(f[0] for f in faces)} ({len(css) // 1024} KB)")
+extra = f" and {' + '.join(f'{src} custom.css' for src, _ in custom)}" if custom else ""
+print(f"{page}: embedded {' + '.join(f[0] for f in faces)} ({len(css) // 1024} KB){extra}")

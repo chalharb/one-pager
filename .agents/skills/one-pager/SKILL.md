@@ -60,7 +60,8 @@ as `.claude/skills` or `.agents/skills`.
    in a `data-` attribute, so edit that and re-run to change it.
    `diagram.mjs` needs Chrome; without it, cut the diagram. `chart.mjs`
    needs only Node.
-6. **Embed the fonts.** Do this last, after the content is final.
+6. **Embed the fonts.** Do this last, after the content is final. It also
+   inlines any `custom.css` for custom blocks.
 
    ```bash
    node <skill-dir>/fonts.mjs <output.html>
@@ -88,10 +89,16 @@ as `.claude/skills` or `.agents/skills`.
 ## Building the page
 
 `template.html` is the frame: the stylesheet, the header (kicker, title,
-lede) and the footer. Between them is a `<!-- @main -->` marker. Read
-`<skill-dir>/snippets/INDEX.md`, which lists every shell and block with
-when to use it, then open only the files you pick. Fill the frame in this
-order.
+lede) and the footer. Between them is a `<!-- @main -->` marker. Run
+
+```bash
+node <skill-dir>/index.mjs
+```
+
+It prints every shell and block, built-in and custom, with when to use it
+and the file to open (without Node, read `<skill-dir>/snippets/INDEX.md`,
+which lists the built-in ones). Open only the files you pick. Fill the
+frame in this order.
 
 1. **Pick one shell** and paste it at the marker, replacing the comment.
    - **Explainer** (`<main>`): the reader wants to *understand* something.
@@ -119,7 +126,8 @@ Composition rules:
 - **Don't write CSS.** Every block is already styled for light, dark and
   print. Don't add `style` attributes, new colours or new classes; the
   checker fails the first two. If nothing fits, use a plain paragraph or
-  list, and tell the user which block was missing.
+  list, and tell the user which block was missing; they can add it as a
+  custom block (see **Custom blocks**).
 - **Group by what the reader looks for.** In a directory, group by kind
   (Code, Infrastructure, Docs, People) or by system: two to six groups,
   each a section with an `<h2>`.
@@ -149,6 +157,26 @@ What changes in the directory shell:
 - **When it overflows**, cut the descriptions first, then the least-used
   links, and ask the user which to drop if it still does not fit. If the
   content really needs two pages, say so; do not shrink the type.
+
+## Custom blocks
+
+Users can add their own blocks and shells outside this folder, so they
+survive skill updates:
+
+- **Project:** `.one-pager/snippets/blocks/` (and `shells/`) at or above the
+  working directory, shared with the team through git.
+- **User:** `~/.config/one-pager/snippets/blocks/`, or `$ONE_PAGER_HOME`.
+
+`index.mjs` lists them with the built-in ones (a custom snippet with a
+built-in's name replaces it), and `fonts.mjs` inlines any `custom.css` from
+the same folders. Use custom blocks exactly like built-in ones.
+
+When the user asks you to add a block, run
+`node <skill-dir>/new-block.mjs "<name>"` (add `--project` or `--user` to
+choose where), then fill in its header and markup. Put any new styles in the
+`custom.css` it names, using palette variables such as `var(--ember)`;
+never in the page. Run `index.mjs` afterwards: it warns about unfinished
+headers.
 
 ## Delegating (optional)
 

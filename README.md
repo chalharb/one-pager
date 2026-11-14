@@ -190,6 +190,9 @@ Each skill folder has the same files, so it works when installed alone:
 | `fonts.mjs`, `fonts.py` | Embed the fonts into a finished page as base64 (Python for sandboxes without Node) |
 | `check.mjs` | Fails a page that loads from the network, has leftover placeholders, strays from the palette, or prints to the wrong page count |
 | `chrome.mjs` | Finds Chrome for the checker and the diagram renderer |
+| `index.mjs` | Prints the snippet index: built-in plus your custom blocks |
+| `new-block.mjs` | Starts a custom block outside the skill folder |
+| `snippets.mjs` | Shared code for finding snippets and building the index |
 | `fonts/` | Schibsted Grotesk and Geist Mono (latin subset) |
 | `examples/` | Finished pages |
 
@@ -197,6 +200,52 @@ Each skill folder has the same files, so it works when installed alone:
 Code, Codex, and Copilot all find both skills when you work in this repo. On
 Windows, enable symlinks in Git (`git config core.symlinks true`) or the links
 check out as plain text files.
+
+## Adding your own block
+
+You can add blocks (and shells) without forking the repo. They live outside
+the installed skill, so `npx skills update` doesn't remove them, and both
+skills pick them up:
+
+| Where | Folder | For |
+|---|---|---|
+| Project | `.one-pager/snippets/blocks/` in your repo | blocks your team shares through git |
+| User | `~/.config/one-pager/snippets/blocks/` (or `$ONE_PAGER_HOME`) | your own blocks, in every project |
+
+Start one with the helper (or ask the agent to "add a pros and cons block"):
+
+```bash
+node ~/.claude/skills/one-pager/new-block.mjs "pros cons"            # project if .one-pager/ exists, else user
+node ~/.claude/skills/one-pager/new-block.mjs "pros cons" --project  # this repo's .one-pager/
+```
+
+It writes a file with a header to fill in, then the markup:
+
+```html
+<!-- snippet
+name: pros cons
+use: Arguments for and against one decision or option.
+fits: wide column, or full width between rows
+limit: 2-5 points per side
+notes: Short points. For several options, use the comparison block.
+-->
+      <section>
+        <h2>{{HEADING}}</h2>
+        <div class="pros-cons">
+          <div><h3>For</h3><ul><li>{{PRO}}</li></ul></div>
+          <div><h3>Against</h3><ul><li>{{CON}}</li></ul></div>
+        </div>
+      </section>
+```
+
+- **Styles** go in `custom.css` next to the `snippets/` folder (for example
+  `~/.config/one-pager/custom.css`). `fonts.mjs` inlines it into each page.
+  Use the palette variables (`var(--ember)`, `var(--sand)`, `var(--muted)`…)
+  so dark mode and print keep working; the checker fails any other colour.
+- **Overriding** a built-in block: give your file the same `name`, such as
+  `callout`. A project block beats a user block, which beats the built-in.
+- **Checking:** `node <skill-dir>/index.mjs` lists everything the agent will
+  see, marks where each block comes from, and warns about unfinished headers.
 
 ## Editing the skills
 
