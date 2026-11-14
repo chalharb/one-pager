@@ -1,0 +1,31 @@
+{
+  "skill_name": "{{name}}",
+  "evals": [
+    {
+      "id": 1,
+      "name": "happy-path",
+      "prompt": "<A realistic, casual user message with a file path and real context.>",
+      "expected_output": "<Human-readable description of what success looks like.>",
+      "files": [],
+      "assertions": [
+        "<Objectively checkable statement, e.g. 'The output file is valid JSON'>"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "precise-request",
+      "prompt": "<A precise, detailed instruction-style prompt.>",
+      "expected_output": "<...>",
+      "files": [],
+      "assertions": []
+    },
+    {
+      "id": 3,
+      "name": "edge-case",
+      "prompt": "<Malformed input, an unusual request, or an ambiguous case.>",
+      "expected_output": "<...>",
+      "files": [],
+      "assertions": []
+    }
+  ]
+}

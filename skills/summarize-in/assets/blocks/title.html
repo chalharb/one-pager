@@ -1,0 +1,25 @@
+<!--
+@block title
+@use Opens the document: kicker (field · format), headline, and a one- or two-sentence lede that stands on its own. Once per document, first thing on page 1.
+@options Lede: full width, at most ~300 characters (about 45 words, three lines); check.mjs warns past that. Add data-rule="none" to drop the heavy rule under the lede. Kicker format: "<Field> · Summarized in N pages" ("1 page" when N is 1), where Field is the broad area in one to three words, e.g. "Networking · Summarized in 2 pages".
+-->
+<style>
+.si-title { display: flex; flex-direction: column; gap: 8px; padding-bottom: 16px; border-bottom: 2px solid var(--si-ink); }
+.si-title[data-rule="none"] { border-bottom: 0; padding-bottom: 0; }
+.si-title__kicker {
+  margin: 0; font: 500 11px/1.4 var(--si-mono); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--si-ember-text);
+}
+.si-title__heading {
+  margin: 0; font: 600 34px/1.08 var(--si-sans); letter-spacing: -.03em; color: var(--si-ink);
+  text-wrap: balance;
+}
+.si-title__lede { margin: 0; font-size: 15px; line-height: 1.5; color: var(--si-muted); text-wrap: pretty; }
+@media screen and (max-width: 880px) { .si-title__heading { font-size: 27px; } }
+</style>
+
+<header class="si-title" data-block="title">
+  <p class="si-title__kicker">Networking · Summarized in 2 pages</p>
+  <h1 class="si-title__heading">How edge networks work</h1>
+  <p class="si-title__lede">One or two sentences that would still be useful if the reader stopped here.</p>
+</header>

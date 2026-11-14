@@ -1,0 +1,19 @@
+<!--
+@block subtitle
+@use Section heading: a small mono uppercase label over a hairline, as in "INSTALL" or "REQUIREMENTS". Put it first inside a <section> with the content it labels.
+@options Add data-tone="accent" to colour the label ember (use for at most one heading per page).
+-->
+<style>
+.si-subtitle {
+  margin: 0; padding-bottom: 5px; border-bottom: 1px solid var(--si-line);
+  font: 500 11px/1.4 var(--si-mono); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--si-muted);
+  break-after: avoid;
+}
+.si-subtitle[data-tone="accent"] { color: var(--si-ember-text); }
+</style>
+
+<section>
+  <h2 class="si-subtitle" data-block="subtitle">What the agent does</h2>
+  <p>Content for this section: paragraphs, lists, a table, or other blocks.</p>
+</section>

@@ -1,0 +1,246 @@
+<!--
+@block wrapper
+@use The document shell every summary starts from. Owns the theme tokens, base typography (p, ul, ol, dl, table, inline code), page sheets, footer, dark mode, and print rules. Copy the markup below as the starting file.
+@options data-pages="N" on .si-doc must equal the number of .si-page sections; data-paper="letter" (default) or "a4"; data-orientation="portrait" (default) or "landscape"; one .si-footer as the last child of the last page. Keep the #si-theme checkbox and its label right after <body>: they are the light/dark toggle (CSS-only, hidden in print).
+-->
+<style>
+/* Theme tokens. Blocks use only these, so dark mode and print come for free. */
+:root {
+  color-scheme: light dark;
+  --si-paper: #f5f3ee;
+  --si-raised: #ffffff;
+  --si-sand: #e9e3d5;
+  --si-ink: #16181d;
+  --si-muted: #585e6a;
+  --si-line: #dcd8ce;
+  --si-ember: #c4401a;
+  --si-ember-text: #b23a12;
+  --si-cobalt: #2c55c9;
+  --si-green: #2f7d4f;
+  --si-amber: #a86400;
+  --si-red: #b4232a;
+  --si-syn-kw: #b23a12;
+  --si-syn-str: #2f6f3e;
+  --si-syn-com: #807d74;
+  --si-syn-num: #8a5a00;
+  --si-syn-fn: #6b3fa0;
+  --si-syn-attr: #2c55c9;
+  --si-sans: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --si-mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --si-page-w: 8.5in;
+  --si-page-h: 11in;
+  --si-pad-x: 0.6in;
+  --si-pad-y: 0.55in;
+  --si-gap: 18px;
+}
+/* Dark mode is screen-only, so paper always prints light. The toggle (a checkbox, no
+   JavaScript) inverts whatever the system prefers; the choice resets on reload. */
+@media screen and (prefers-color-scheme: dark) {
+  :root:not(:has(#si-theme:checked)) {
+    color-scheme: dark;
+    --si-paper: #0f1013;
+    --si-raised: #1c1f25;
+    --si-sand: #2a2620;
+    --si-ink: #eceae4;
+    --si-muted: #a1a6b0;
+    --si-line: #2e323b;
+    --si-ember: #ff6b3d;
+    --si-ember-text: #ff8a63;
+    --si-cobalt: #7c9cff;
+    --si-green: #5fcf8c;
+    --si-amber: #f0b45a;
+    --si-red: #ff7b7b;
+    --si-syn-kw: #ff8a63;
+    --si-syn-str: #9bd5a8;
+    --si-syn-com: #8a8f9a;
+    --si-syn-num: #f0b45a;
+    --si-syn-fn: #c4a5ff;
+    --si-syn-attr: #8fb0ff;
+  }
+}
+@media screen and (prefers-color-scheme: light) {
+  :root:has(#si-theme:checked) {
+    color-scheme: dark;
+    --si-paper: #0f1013;
+    --si-raised: #1c1f25;
+    --si-sand: #2a2620;
+    --si-ink: #eceae4;
+    --si-muted: #a1a6b0;
+    --si-line: #2e323b;
+    --si-ember: #ff6b3d;
+    --si-ember-text: #ff8a63;
+    --si-cobalt: #7c9cff;
+    --si-green: #5fcf8c;
+    --si-amber: #f0b45a;
+    --si-red: #ff7b7b;
+    --si-syn-kw: #ff8a63;
+    --si-syn-str: #9bd5a8;
+    --si-syn-com: #8a8f9a;
+    --si-syn-num: #f0b45a;
+    --si-syn-fn: #c4a5ff;
+    --si-syn-attr: #8fb0ff;
+  }
+}
+
+/* Everything below is wrapped in :where() so any block class overrides it. */
+:where(html, body) { margin: 0; padding: 0; }
+:where(.si-body) {
+  background: var(--si-paper);
+  color: var(--si-ink);
+  font: 13.5px/1.5 var(--si-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+:where(.si-doc) *, :where(.si-doc) *::before, :where(.si-doc) *::after { box-sizing: border-box; }
+:where(.si-doc) {
+  display: flex; flex-direction: column; align-items: center; gap: 28px;
+  padding: 32px 16px 48px;
+  counter-reset: si-page;
+}
+:where(.si-doc[data-paper="a4"]) { --si-page-w: 210mm; --si-page-h: 297mm; }
+:where(.si-doc[data-orientation="landscape"]) { --si-page-w: 11in; --si-page-h: 8.5in; }
+:where(.si-doc[data-paper="a4"][data-orientation="landscape"]) { --si-page-w: 297mm; --si-page-h: 210mm; }
+
+/* A page is one printed sheet. On screen it is drawn as a sheet of paper. */
+:where(.si-page) {
+  position: relative;
+  width: var(--si-page-w);
+  max-width: 100%;
+  min-height: var(--si-page-h);
+  padding: var(--si-pad-y) var(--si-pad-x);
+  background: var(--si-raised);
+  border: 1px solid var(--si-line);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .04), 0 8px 24px rgb(0 0 0 / .06);
+  display: flex; flex-direction: column; gap: var(--si-gap);
+  counter-increment: si-page;
+}
+/* Page numbers, only when there is more than one page. */
+:where(.si-doc:has(.si-page + .si-page) .si-page)::after {
+  content: counter(si-page);
+  position: absolute; right: var(--si-pad-x); bottom: 0.25in;
+  font: 500 9.5px var(--si-mono); color: var(--si-muted); letter-spacing: .06em;
+}
+
+/* Prose */
+:where(.si-doc) :where(h1, h2, h3, h4, p, ul, ol, dl, dd, figure, pre, blockquote, table) { margin: 0; }
+:where(.si-doc) :where(section:not(.si-page)) { display: flex; flex-direction: column; gap: 8px; }
+:where(.si-doc) :where(h3) { font: 600 14px/1.3 var(--si-sans); letter-spacing: -.005em; }
+:where(.si-doc) :where(p) { text-wrap: pretty; }
+:where(.si-doc) :where(strong, b) { font-weight: 600; }
+:where(.si-doc) :where(a) { color: var(--si-cobalt); text-underline-offset: 2px; }
+:where(.si-doc) :where(ul, ol) { padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+:where(.si-doc) :where(ul) > li::marker { color: var(--si-ember); font-size: 1.1em; }
+:where(.si-doc) :where(ol) > li { padding-left: 4px; }
+:where(.si-doc) :where(ol) > li::marker { color: var(--si-ember-text); font: 600 1em var(--si-mono); }
+:where(.si-doc) :where(:not(pre) > code, kbd) {
+  font: 0.92em var(--si-mono);
+  background: var(--si-sand); border-radius: 3px; padding: 0.05em 0.3em;
+}
+:where(.si-doc) :where(dl) { display: grid; grid-template-columns: auto 1fr; gap: 5px 16px; }
+:where(.si-doc) :where(dt) { color: var(--si-muted); }
+:where(.si-doc) :where(dd) { font-weight: 600; }
+:where(.si-doc) :where(table) { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+:where(.si-doc) :where(th) {
+  text-align: left; font: 500 10px var(--si-mono); letter-spacing: .08em; text-transform: uppercase;
+  color: var(--si-muted); border-bottom: 1px solid var(--si-ink); padding: 0 10px 5px 0;
+}
+:where(.si-doc) :where(td) { border-bottom: 1px solid var(--si-line); padding: 5px 10px 5px 0; vertical-align: top; }
+:where(.si-doc) :where(blockquote) { border-left: 2px solid var(--si-line); padding-left: 12px; color: var(--si-muted); }
+
+/* Footer: last child of the last page, pinned to the bottom of the sheet. */
+:where(.si-footer) {
+  margin-top: auto;
+  padding-top: 10px; border-top: 1px solid var(--si-line);
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px;
+  font: 10.5px/1.5 var(--si-mono); color: var(--si-muted);
+}
+:where(.si-doc:has(.si-page + .si-page) .si-footer) { padding-right: 24px; }
+
+/* Theme toggle: fixed top-right on screen, never printed. */
+:where(.si-theme-input) { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+:where(.si-theme-toggle) {
+  position: fixed; top: 14px; right: 14px; z-index: 10;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 10px; border: 1px solid var(--si-line); border-radius: 999px;
+  background: var(--si-raised); color: var(--si-muted);
+  font: 500 10.5px/1 var(--si-mono); letter-spacing: .08em; text-transform: uppercase;
+  cursor: pointer; user-select: none;
+  box-shadow: 0 1px 2px rgb(0 0 0 / .06);
+}
+:where(.si-theme-toggle):hover { color: var(--si-ink); border-color: var(--si-muted); }
+:where(.si-theme-input:focus-visible + .si-theme-toggle) { outline: 2px solid var(--si-ember); outline-offset: 2px; }
+:where(.si-theme-toggle) svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+/* Show the mode you would switch TO: moon + "Dark" while light, sun + "Light" while dark. */
+:where(.si-theme-toggle .si-theme-to-light) { display: none; }
+@media screen and (prefers-color-scheme: dark) {
+  :root:not(:has(#si-theme:checked)) :where(.si-theme-to-dark) { display: none; }
+  :root:not(:has(#si-theme:checked)) :where(.si-theme-to-light) { display: inline-flex; }
+}
+@media screen and (prefers-color-scheme: light) {
+  :root:has(#si-theme:checked) :where(.si-theme-to-dark) { display: none; }
+  :root:has(#si-theme:checked) :where(.si-theme-to-light) { display: inline-flex; }
+}
+:where(.si-theme-to-dark, .si-theme-to-light) { align-items: center; gap: 6px; }
+:where(.si-theme-to-dark) { display: inline-flex; }
+
+/* Narrow screens: sheets become fluid cards and columns stack. */
+@media screen and (max-width: 880px) {
+  :where(.si-doc) { padding: 16px 0 32px; gap: 16px; }
+  :where(.si-page) { width: 100%; min-height: 0; padding: 28px 16px; border-radius: 0; border-left: 0; border-right: 0; }
+  :where(.si-page)::after { display: none; }
+}
+
+/* Print: one .si-page per sheet, always the light palette, no screen chrome. */
+@page { size: letter; margin: 0; }
+@media print {
+  :root {
+    color-scheme: light;
+    --si-paper: #fff; --si-raised: #fff; --si-sand: #ece7db; --si-ink: #16181d; --si-muted: #585e6a;
+    --si-line: #dcd8ce; --si-ember: #c4401a; --si-ember-text: #b23a12; --si-cobalt: #2c55c9;
+    --si-green: #2f7d4f; --si-amber: #a86400; --si-red: #b4232a;
+    --si-syn-kw: #b23a12; --si-syn-str: #2f6f3e; --si-syn-com: #807d74; --si-syn-num: #8a5a00;
+    --si-syn-fn: #6b3fa0; --si-syn-attr: #2c55c9;
+  }
+  :where(.si-body) { background: #fff; }
+  :where(.si-doc) { display: block; padding: 0; }
+  :where(.si-page) {
+    width: var(--si-page-w); max-width: none;
+    height: var(--si-page-h); min-height: 0; overflow: hidden;
+    border: 0; border-radius: 0; box-shadow: none; margin: 0;
+    break-after: page;
+  }
+  :where(.si-page:last-child) { break-after: auto; }
+  :where(.si-doc) * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  :where(.si-doc) :where(a) { color: inherit; text-decoration-color: var(--si-line); }
+  :where(.si-theme-input, .si-theme-toggle) { display: none !important; }
+}
+</style>
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="summarize-in">
+<title>{{TITLE}}</title>
+<!-- si:styles --><!-- /si:styles -->
+</head>
+<body class="si-body">
+<input type="checkbox" id="si-theme" class="si-theme-input" aria-label="Switch between light and dark mode">
+<label for="si-theme" class="si-theme-toggle" title="Switch between light and dark mode">
+  <span class="si-theme-to-dark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>Dark</span>
+  <span class="si-theme-to-light"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Light</span>
+</label>
+<main class="si-doc" data-block="wrapper" data-pages="1" data-paper="letter" data-orientation="portrait">
+  <section class="si-page">
+    <!-- title block, then layout blocks (column-1 / column-2) holding the content blocks -->
+
+    <footer class="si-footer">
+      <span>Source: {{SOURCES}}</span>
+      <span>{{MONTH YEAR}}</span>
+    </footer>
+  </section>
+</main>
+</body>
+</html>
