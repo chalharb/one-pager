@@ -9,8 +9,9 @@ Turn any subject into one self-contained `.html` file that reads well on
 screen and prints as exactly one Letter page. The skill is a page frame
 with every style already in it (`template.html`), a catalogue of shells and
 blocks to build the page from (`snippets.html`), two worked examples
-(`examples/`), a font embedder (`fonts.mjs`), and a checker (`check.mjs`)
-that enforces the rules below.
+(`examples/`), diagram and chart renderers (`diagram.mjs`, `chart.mjs`), a
+font embedder (`fonts.mjs`), and a checker (`check.mjs`) that enforces the
+rules below. For more than one page, use the summarize-in skill.
 
 `<skill-dir>` below means the folder that contains this `SKILL.md`. Resolve
 it to a real path before running anything; do not assume a location such
@@ -48,15 +49,17 @@ as `.claude/skills` or `.agents/skills`.
    from `<skill-dir>/snippets.html` as described in **Building the page**
    below: one shell, then the blocks that suit the content. Replace every
    `{{PLACEHOLDER}}`.
-5. **Render diagrams, if any.** Skip this if the page has none.
+5. **Render the figure, if any.** Skip this if the page has none.
 
    ```bash
-   node <skill-dir>/diagram.mjs <output.html>
+   node <skill-dir>/diagram.mjs <output.html>   # Mermaid diagram
+   node <skill-dir>/chart.mjs <output.html>     # data chart
    ```
 
-   It replaces each `<pre class="mermaid">` block with an inline SVG and
-   keeps the source in a `data-mermaid` attribute, so edit that and re-run
-   to change a diagram. It needs Chrome; without it, cut the diagram.
+   Each replaces its `<pre>` block with an inline SVG and keeps the source
+   in a `data-` attribute, so edit that and re-run to change it.
+   `diagram.mjs` needs Chrome; without it, cut the diagram. `chart.mjs`
+   needs only Node.
 6. **Embed the fonts.** Do this last, after the content is final.
 
    ```bash
@@ -116,7 +119,8 @@ lede) and the footer. Between them is a `<!-- @main -->` marker. Read
 | timeline | History, a rollout plan, deadlines |
 | comparison | Two to four options against the same criteria |
 | stat row | Two to four numbers that are the point (off by default) |
-| diagram | A flow or structure that is clearer drawn (one at most) |
+| diagram | A flow or structure that is clearer drawn (one figure at most) |
+| chart | A bar or line chart of sourced numbers (one figure at most) |
 | callout | The takeaway or the one thing not to miss (one at most) |
 
 Composition rules:
@@ -206,7 +210,9 @@ writing.
   words, `flowchart LR` or `sequenceDiagram`. It goes in the wide column
   next to the text it illustrates, and it replaces words rather than
   repeating them. No styling, colours, or `classDef` in the source; the
-  renderer applies the palette. One diagram per page at most.
+  renderer applies the palette. One figure per page at most: a diagram
+  or a chart, not both. A chart follows the same rule as the stat row:
+  only when the numbers are the point, every value sourced.
 - **Two columns of different jobs** (explainer shell). The wide column carries the
   explanation; the narrow one carries reference material (definitions,
   key terms, steps, a takeaway callout).
@@ -259,13 +265,11 @@ printed PDF.
   Edge in the usual macOS and Linux locations, or `CHROME_BIN`. Without
   one, the print check is reported as `SKIPPED` and the other checks
   still run, so say that the page length was not verified.
-- **The palette is written three times** (light, dark, print). If the
-  site's palette changes, update all three blocks in `template.html`, the
-  `PALETTE` list in `check.mjs`, and the copied stylesheets in
-  `examples/`.
-- **Changing a block's look is a template change.** Block styles live only
-  in `template.html`; `snippets.html` holds markup only. The examples carry
-  a copy of the stylesheet, so paste the new `<style>` block into them too.
+- **Don't edit the shared files in this folder.** In the source repo, the
+  stylesheet, scripts, fonts and `snippets.html` live in `shared/` and are
+  copied into every skill by `scripts/sync.mjs`. Change them there and
+  re-run it. The palette appears in `shared/style.css` (light, dark and
+  print) and in the `PALETTE` list in `shared/check.mjs`.
 - **Wide diagrams shrink their text.** The SVG scales down to fit the
   column, so a diagram with many side-by-side nodes ends up with tiny
   labels. If a rendered diagram's text looks smaller than the body text,

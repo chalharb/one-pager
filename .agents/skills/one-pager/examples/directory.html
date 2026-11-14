@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Payments platform: where everything lives</title>
 <style>
+  /* @shared-css:start (from shared/style.css; edit there, then run scripts/sync.mjs) */
   :root {
     color-scheme: light dark;
   /* Blueprint palette, from the loganharber.com redesign. Do not change per topic. */
@@ -70,7 +71,7 @@
   .stat { background: var(--sand); border-radius: 6px; padding: 10px 12px; }
   .stat b {
     display: block; font: 600 22px/1.15 var(--sans); letter-spacing: -.015em;
-    color: var(--ember-text); font-variant-numeric: tabular-nums;
+    color: var(--ember-text);
   }
   .stat span { font-size: 11.5px; color: var(--muted); line-height: 1.3; display: block; }
 
@@ -81,7 +82,7 @@
     color: var(--muted); border-bottom: 1px solid var(--line);
     padding-bottom: 4px; margin-bottom: 8px;
   }
-  p + p { margin-top: 8px; }
+  p + p, p + ul, p + ol, ul + p, ol + p, dl + p { margin-top: 8px; }
   ul, ol { padding-left: 18px; }
   li + li { margin-top: 4px; }
   li::marker { color: var(--ember-text); }
@@ -116,7 +117,6 @@
   }
   td { padding: 4px 10px 4px 0; border-top: 1px dotted var(--line); vertical-align: top; }
   .compare td:first-child { color: var(--muted); }
-  .compare td { font-variant-numeric: tabular-nums; }
   .wide { margin: 0 0 18px; }
 
   .timeline { list-style: none; padding: 0 0 0 14px; border-left: 2px solid var(--line); }
@@ -154,11 +154,46 @@
   .contacts td:first-child { font-weight: 600; }
   .contacts .reach { display: inline; font-size: 11px; }
 
+  /* Report shell: <main class="report"> for pages with several figures, usually
+     over more than one printed page. A stack of .row blocks (wide + narrow
+     column, or .even halves) with full-width figures and tables between them. */
+  main.report { display: block; }
+  main.report > * + * { margin-top: 18px; }
+  .row { display: grid; grid-template-columns: 1.55fr 1fr; gap: 28px; }
+  main > *, .row > * { min-width: 0; } /* let wide content scroll, not stretch the page */
+  .row.even { grid-template-columns: 1fr 1fr; }
+  .page-break { break-before: page; }
+
+  /* Charts, rendered to inline SVG by chart.mjs. Text in the SVG is in CSS px
+     at print size; series take cobalt then ember, never more than two. */
+  .chart { margin: 0; }
+  * + .chart, * + .diagram { margin-top: 10px; }
+  .chart svg { display: block; width: 100%; height: auto; font-family: var(--sans); overflow: visible; }
+  .chart .s1 { fill: var(--cobalt); }
+  .chart .s2 { fill: var(--ember); }
+  .chart .l1, .chart .l2 { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .chart .l1 { stroke: var(--cobalt); }
+  .chart .l2 { stroke: var(--ember); }
+  .chart .ring { stroke: var(--raised); stroke-width: 2; }
+  .chart .grid { stroke: var(--line); stroke-width: 1; }
+  .chart .base { stroke: var(--muted); stroke-width: 1; }
+  .chart .t { fill: var(--ink); font-size: 11px; }
+  .chart .tv { fill: var(--ink); font-size: 11px; font-weight: 600; }
+  .chart .tm { fill: var(--muted); font-size: 10.5px; }
+  .chart figcaption { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .chart figcaption strong { color: var(--ink); }
+  .chart-data { margin-top: 4px; font-size: 12px; }
+  .chart-data summary { cursor: pointer; color: var(--muted); font: 10.5px var(--mono); }
+
   @media (max-width: 640px) {
     .page { padding: 24px 20px; }
     h1 { font-size: 27px; }
     main { grid-template-columns: 1fr; gap: 16px; }
     main.directory { columns: 1; }
+    .row, .row.even { grid-template-columns: 1fr; gap: 16px; }
+    /* Keep chart text legible on phones: scroll wide charts sideways instead. */
+    .chart { overflow-x: auto; }
+    .chart svg { min-width: 480px; }
     .contacts thead { display: none; }
     .contacts tr { display: block; padding: 6px 0; border-top: 1px dotted var(--line); }
     .contacts td { display: inline; border: 0; padding: 0 8px 0 0; }
@@ -166,7 +201,7 @@
     .contacts .reach { display: block; }
   }
 
-  /* Print: exactly one Letter page, always the light palette. */
+  /* Print: Letter pages, always the light palette. The page count is per skill. */
   @page { size: Letter; margin: 0.45in; }
   @media print {
     :root {
@@ -177,9 +212,11 @@
     body { padding: 0; font-size: 12.5px; }
     .page { max-width: none; border: 0; border-radius: 0; padding: 0; }
     main { grid-template-columns: 1.55fr 1fr; }
-    section, .stat, .callout, .diagram, pre, tr { break-inside: avoid; }
+    section, .stat, .callout, .diagram, .chart, pre, tr { break-inside: avoid; }
+    .chart-data { display: none; }
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
+  /* @shared-css:end */
 </style>
 </head>
 <body>

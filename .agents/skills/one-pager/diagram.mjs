@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Render Mermaid diagrams in a one-pager to inline SVG, so the page needs no
+// Render Mermaid diagrams in a page to inline SVG, so the page needs no
 // JavaScript and no network.
 //
 //   node diagram.mjs <file.html>
@@ -19,6 +19,7 @@ import { createHash } from 'node:crypto';
 import { homedir, tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { findChrome, headlessArgs } from './chrome.mjs';
 
 const MERMAID_VERSION = '12.2.0';
 const MERMAID_SHA256 = 'a8a6a6f805b074a8261a2825c86f99c8054acb3b35f50bb7e24a4f9f2c3c3b9f';
@@ -79,15 +80,7 @@ if (!existsSync(lib) || sha(readFileSync(lib)) !== MERMAID_SHA256) {
 }
 
 // --- Render in headless Chrome ---------------------------------------------
-const chrome = [
-  process.env.CHROME_BIN,
-  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-  '/Applications/Chromium.app/Contents/MacOS/Chromium',
-  '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
-  '/usr/bin/google-chrome',
-  '/usr/bin/chromium',
-  '/usr/bin/chromium-browser',
-].find((p) => p && existsSync(p));
+const chrome = findChrome();
 if (!chrome) {
   console.error('no Chrome/Chromium found (set CHROME_BIN); cannot render diagrams');
   process.exit(1);
@@ -177,7 +170,7 @@ try {
   const dom = execFileSync(
     chrome,
     [
-      '--headless=new', '--disable-gpu', '--allow-file-access-from-files',
+      ...headlessArgs(), '--allow-file-access-from-files',
       `--user-data-dir=${join(tmp, 'profile')}`, '--virtual-time-budget=20000',
       '--dump-dom', pathToFileURL(renderPage).href,
     ],

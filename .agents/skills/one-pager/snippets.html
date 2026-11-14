@@ -1,5 +1,6 @@
 <!--
-  one-pager snippets: shells and blocks to paste into a copy of template.html.
+  Snippets: shells and blocks to paste into a copy of template.html. Shared by
+  every skill in this repo; the skill's SKILL.md says which shells it uses.
 
   This file is a catalogue, not a page; do not open or check it on its own.
   All of the CSS these need is already in template.html, so paste the markup
@@ -38,6 +39,30 @@
             section to run it full width. Example: examples/directory.html. -->
   <main class="directory">
     <!-- 2-6 sections, each a group: link list, contacts, commands, callout -->
+  </main>
+<!-- ==== /shell ==== -->
+
+
+<!-- ==== shell: report ====
+     use:   several figures (charts, diagrams, comparisons), usually over more
+            than one printed page. Used by summarize-in.
+     shape: a stack of rows. A row is a wide + narrow column pair; full-width
+            figures and tables sit between rows. Add class="page-break" to a
+            row to start it on a new printed page (sparingly). -->
+  <main class="report">
+    <div class="row">
+      <div>
+        <!-- explanation blocks -->
+      </div>
+      <aside>
+        <!-- reference blocks -->
+      </aside>
+    </div>
+    <!-- full-width chart, diagram, comparison or stat row -->
+    <div class="row">
+      <div></div>
+      <aside></aside>
+    </div>
   </main>
 <!-- ==== /shell ==== -->
 
@@ -168,13 +193,49 @@
 <!-- ==== /block ==== -->
 
 <!-- ==== block: diagram ====
-     where: explainer wide column, inside a section, next to the text it
-     illustrates.   limit: one per page, ~6 nodes, 1-3 word labels,
-     flowchart LR or sequenceDiagram, no styling. Run diagram.mjs to render. -->
+     where: a wide column, inside a section, next to the text it illustrates;
+     or full width between report rows.   limit: one per printed page; ~6 nodes
+     in a column, up to ~12 at full width; 1-3 word labels; flowchart LR,
+     sequenceDiagram or stateDiagram-v2; no styling. Run diagram.mjs to render. -->
         <pre class="mermaid">
 flowchart LR
   A[{{NODE_A}}] --> B[{{NODE_B}}]
         </pre>
+<!-- ==== /block ==== -->
+
+<!-- ==== block: row ====
+     where: report shell only.   A wide + narrow pair. class="row even" splits it
+     in halves, e.g. two charts side by side. class="row page-break" starts it on
+     a new printed page. -->
+    <div class="row">
+      <div>
+        <!-- blocks -->
+      </div>
+      <aside>
+        <!-- blocks -->
+      </aside>
+    </div>
+<!-- ==== /block ==== -->
+
+<!-- ==== block: chart ====
+     where: a wide column ("width": "column", the default), half of a "row even"
+     ("width": "half"), or full width between report rows ("width": "full").
+     Never in a narrow column: the text would shrink.   limit: one or two series (cobalt, then ember);
+     bar: 2-8 categories, for comparing amounts; line: 3-12 ordered points, for
+     change over time or distance. Every value needs a source; a computed series
+     says how in "source". The title states the takeaway, not the axes. One axis
+     only: two measures of different scale are two charts. Run chart.mjs to render.
+     Keys: type, title, labels, series [{name, values}], unit, source, width, yMin. -->
+      <pre class="chart">
+{
+  "type": "bar",
+  "title": "{{TAKEAWAY}}",
+  "labels": ["{{LABEL_A}}", "{{LABEL_B}}"],
+  "series": [{ "name": "{{SERIES}}", "values": [0, 0] }],
+  "unit": "{{UNIT}}",
+  "source": "{{SOURCE}}"
+}
+      </pre>
 <!-- ==== /block ==== -->
 
 <!-- ==== block: callout ====

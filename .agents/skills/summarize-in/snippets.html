@@ -1,0 +1,248 @@
+<!--
+  Snippets: shells and blocks to paste into a copy of template.html. Shared by
+  every skill in this repo; the skill's SKILL.md says which shells it uses.
+
+  This file is a catalogue, not a page; do not open or check it on its own.
+  All of the CSS these need is already in template.html, so paste the markup
+  only. Never add style attributes or new colours: check.mjs rejects them.
+
+  How to use:
+    1. Paste ONE shell at the <!-- @main --> marker in the template.
+    2. Fill its columns with blocks. Each block lists where it fits and its limit.
+    3. Repeat a block (a <li>, a <tr>, a <section>) as many times as needed.
+    4. Copy the markup between the comment lines, not the comments themselves.
+-->
+
+
+<!-- ======================================================================
+     SHELLS: pick exactly one.
+     ====================================================================== -->
+
+<!-- ==== shell: explainer ====
+     use:   the reader wants to UNDERSTAND something (how, why, what it is).
+     shape: wide column of prose and lists; narrow column of reference
+            material. Most topics. Example: examples/dns.html. -->
+  <main>
+    <div>
+      <!-- explanation blocks: paragraph section, list section, diagram, command -->
+    </div>
+    <aside>
+      <!-- reference blocks: terms, facts, steps, link list, callout -->
+    </aside>
+  </main>
+<!-- ==== /shell ==== -->
+
+<!-- ==== shell: directory ====
+     use:   the reader wants to FIND things: links to repos, Terraform, SharePoint,
+            dashboards, runbooks, and the people to contact. Cheat sheets.
+     shape: sections flow down two balanced columns; add class="span" to a
+            section to run it full width. Example: examples/directory.html. -->
+  <main class="directory">
+    <!-- 2-6 sections, each a group: link list, contacts, commands, callout -->
+  </main>
+<!-- ==== /shell ==== -->
+
+
+<!-- ==== shell: report ====
+     use:   several figures (charts, diagrams, comparisons), usually over more
+            than one printed page. Used by summarize-in.
+     shape: a stack of rows. A row is a wide + narrow column pair; full-width
+            figures and tables sit between rows. Add class="page-break" to a
+            row to start it on a new printed page (sparingly). -->
+  <main class="report">
+    <div class="row">
+      <div>
+        <!-- explanation blocks -->
+      </div>
+      <aside>
+        <!-- reference blocks -->
+      </aside>
+    </div>
+    <!-- full-width chart, diagram, comparison or stat row -->
+    <div class="row">
+      <div></div>
+      <aside></aside>
+    </div>
+  </main>
+<!-- ==== /shell ==== -->
+
+
+<!-- ======================================================================
+     BLOCKS
+     ====================================================================== -->
+
+<!-- ==== block: paragraph section ====
+     where: explainer wide column.   limit: 2-4 sentences per paragraph. -->
+      <section>
+        <h2>{{HEADING}}</h2>
+        <p>{{TEXT}}</p>
+      </section>
+<!-- ==== /block ==== -->
+
+<!-- ==== block: point list ====
+     where: explainer wide column.   limit: 3-6 items.
+     Bold the opening words only when they name the item. -->
+      <section>
+        <h2>{{HEADING}}</h2>
+        <ul>
+          <li><strong>{{NAME}}</strong> {{DETAIL}}</li>
+        </ul>
+      </section>
+<!-- ==== /block ==== -->
+
+<!-- ==== block: steps ====
+     where: either column.   limit: 3-7 steps; order matters, or use a point list. -->
+      <section>
+        <h2>{{HEADING}}</h2>
+        <ol>
+          <li>{{STEP}}</li>
+        </ol>
+      </section>
+<!-- ==== /block ==== -->
+
+<!-- ==== block: facts ====
+     where: explainer narrow column.   limit: 3-8 rows of short label / value pairs
+     (owner, version, region, cost). -->
+      <section>
+        <h2>{{HEADING}}</h2>
+        <dl>
+          <dt>{{LABEL}}</dt><dd>{{VALUE}}</dd>
+        </dl>
+      </section>
+<!-- ==== /block ==== -->
+
+<!-- ==== block: terms ====
+     where: explainer narrow column.   limit: 3-8 terms, one-line definitions.
+     A glossary: the term is in mono, the definition in plain text. -->
+      <section>
+        <h2>{{HEADING}}</h2>
+        <dl class="terms">
+          <dt>{{TERM}}</dt><dd>{{DEFINITION}}</dd>
+        </dl>
+      </section>
+<!-- ==== /block ==== -->
+
+<!-- ==== block: link list ====
+     where: directory section, or explainer narrow column.   limit: 2-8 links
+     per list. Link text is the resource's name, never a URL. The .url line is
+     for paper: host + meaningful path, no https://, query strings or
+     /Forms/AllItems.aspx; "…/rest/of/path" when the host is shown above it.
+     Never invent a URL: leave the entry out instead. -->
+      <section>
+        <h2>{{GROUP}}</h2>
+        <ul class="links">
+          <li><a href="{{URL}}">{{NAME}}</a> <span class="note">{{WHAT_IT_IS_FOR}}</span><span class="url">{{SHORT_URL}}</span></li>
+        </ul>
+      </section>
+<!-- ==== /block ==== -->
+
+<!-- ==== block: contacts ====
+     where: directory, always in a full-width section.   limit: up to ~10 people.
+     Only names, roles and addresses the user gave you or a source shows.
+     Reach is an email address or a channel; stacks into cards on phones. -->
+      <section class="span">
+        <h2>{{HEADING}}</h2>
+        <table class="contacts">
+          <thead><tr><th>Area</th><th>Name</th><th>Role</th><th>Reach</th></tr></thead>
+          <tr><td>{{AREA}}</td><td>{{NAME}}</td><td>{{ROLE}}</td><td><span class="reach">{{EMAIL_OR_CHANNEL}}</span></td></tr>
+        </table>
+      </section>
+<!-- ==== /block ==== -->
+
+<!-- ==== block: command ====
+     where: either column or a directory section.   limit: 1-6 lines per block;
+     2-3 blocks per page. For CLI snippets, config, or a query people copy.
+     Inline names in running text use <code> instead. -->
+      <section>
+        <h2>{{HEADING}}</h2>
+        <p>{{WHAT_IT_DOES}}</p>
+        <pre><code>{{COMMAND}}</code></pre>
+      </section>
+<!-- ==== /block ==== -->
+
+<!-- ==== block: timeline ====
+     where: explainer narrow column, or a directory section.   limit: 3-6 entries.
+     History, a rollout plan, or deadlines; .when is a date or phase. -->
+      <section>
+        <h2>{{HEADING}}</h2>
+        <ol class="timeline">
+          <li><span class="when">{{WHEN}}</span>{{WHAT_HAPPENS}}</li>
+        </ol>
+      </section>
+<!-- ==== /block ==== -->
+
+<!-- ==== block: comparison ====
+     where: full width, directly above the shell; or in a directory
+     <section class="span">.   limit: 2-4 options as columns, 3-7 rows.
+     Rows are criteria; cells are short (a word, a number, a phrase). -->
+  <div class="wide">
+    <table class="compare">
+      <thead><tr><th></th><th>{{OPTION_A}}</th><th>{{OPTION_B}}</th></tr></thead>
+      <tr><td>{{CRITERION}}</td><td>{{A}}</td><td>{{B}}</td></tr>
+    </table>
+  </div>
+<!-- ==== /block ==== -->
+
+<!-- ==== block: stat row ====
+     where: full width, directly above the shell.   limit: 2-4 tiles; 5 wrap and
+     cost an inch. Off by default: only when the numbers ARE the point (a price,
+     a deadline, a growth rate). Never invent a number to fill a tile. -->
+  <div class="stats">
+    <div class="stat"><b>{{NUMBER}}</b><span>{{LABEL}}</span></div>
+  </div>
+<!-- ==== /block ==== -->
+
+<!-- ==== block: diagram ====
+     where: a wide column, inside a section, next to the text it illustrates;
+     or full width between report rows.   limit: one per printed page; ~6 nodes
+     in a column, up to ~12 at full width; 1-3 word labels; flowchart LR,
+     sequenceDiagram or stateDiagram-v2; no styling. Run diagram.mjs to render. -->
+        <pre class="mermaid">
+flowchart LR
+  A[{{NODE_A}}] --> B[{{NODE_B}}]
+        </pre>
+<!-- ==== /block ==== -->
+
+<!-- ==== block: row ====
+     where: report shell only.   A wide + narrow pair. class="row even" splits it
+     in halves, e.g. two charts side by side. class="row page-break" starts it on
+     a new printed page. -->
+    <div class="row">
+      <div>
+        <!-- blocks -->
+      </div>
+      <aside>
+        <!-- blocks -->
+      </aside>
+    </div>
+<!-- ==== /block ==== -->
+
+<!-- ==== block: chart ====
+     where: a wide column ("width": "column", the default), half of a "row even"
+     ("width": "half"), or full width between report rows ("width": "full").
+     Never in a narrow column: the text would shrink.   limit: one or two series (cobalt, then ember);
+     bar: 2-8 categories, for comparing amounts; line: 3-12 ordered points, for
+     change over time or distance. Every value needs a source; a computed series
+     says how in "source". The title states the takeaway, not the axes. One axis
+     only: two measures of different scale are two charts. Run chart.mjs to render.
+     Keys: type, title, labels, series [{name, values}], unit, source, width, yMin. -->
+      <pre class="chart">
+{
+  "type": "bar",
+  "title": "{{TAKEAWAY}}",
+  "labels": ["{{LABEL_A}}", "{{LABEL_B}}"],
+  "series": [{ "name": "{{SERIES}}", "values": [0, 0] }],
+  "unit": "{{UNIT}}",
+  "source": "{{SOURCE}}"
+}
+      </pre>
+<!-- ==== /block ==== -->
+
+<!-- ==== block: callout ====
+     where: end of either column, or its own directory section.   limit: one per
+     page, 1-2 sentences. The takeaway, or the thing a reader must not miss
+     (how to escalate, the one rule). -->
+      <section>
+        <div class="callout"><strong>{{LEAD_IN}}</strong> {{MESSAGE}}</div>
+      </section>
+<!-- ==== /block ==== -->
