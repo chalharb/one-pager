@@ -9,7 +9,7 @@ Turn any subject into one self-contained `.html` file that reads well on
 screen and prints as exactly N Letter pages, with charts and diagrams where
 they explain better than words. It shares its look, blocks and scripts with
 the one-pager skill: a page frame with every style already in it
-(`template.html`), a catalogue of shells and blocks (`snippets.html`), a chart
+(`template.html`), a catalogue of shells and blocks (`snippets/`), a chart
 renderer (`chart.mjs`), a diagram renderer (`diagram.mjs`), a font embedder
 (`fonts.mjs`), and a checker (`check.mjs`).
 
@@ -64,7 +64,7 @@ the topic is truly ambiguous.
 
    Copy `<skill-dir>/template.html` there. Set `<meta name="op-pages">` to
    N, fill the header, then paste the **report** shell from
-   `<skill-dir>/snippets.html` at the `<!-- @main -->` marker and build the
+   `<skill-dir>/snippets/shells/report.html` at the `<!-- @main -->` marker and build the
    pages from its blocks (see **Building the pages**). Replace every
    `{{PLACEHOLDER}}`.
 5. **Render charts and diagrams.**
@@ -109,22 +109,11 @@ across a page break. To start something on a fresh page, add `page-break`
 to that row's class. Use it at most once per page break, only when a page
 would otherwise end on an orphaned heading or a big gap.
 
-Each block in `snippets.html` says when to use it, where it fits, and its
-limit. Paste the markup only, without the catalogue comments.
-
-| Block | Use it for |
-|---|---|
-| paragraph section, point list | The explanation itself |
-| steps | An ordered procedure |
-| facts, terms | Short label / value pairs; a glossary |
-| link list, contacts | Where to go next; who to ask |
-| command | A command, config or query people copy |
-| timeline | History, a rollout plan, deadlines |
-| comparison | Two to four options against the same criteria |
-| stat row | Two to four numbers that are the point |
-| chart | Amounts (bar) or change across an ordered scale (line) |
-| diagram | A flow, sequence, structure or state machine |
-| callout | The takeaway or the one thing not to miss |
+Read `<skill-dir>/snippets/INDEX.md` to choose blocks: it lists every block
+with when to use it, where it fits and its limit, and ends with a guide to
+choosing between similar ones. Then open only the files you picked; each
+starts with notes on filling it in. Paste the markup only, without the
+header comment.
 
 ### Budget per page
 
@@ -216,7 +205,7 @@ screenshot of the screen view.
 - **The first diagram render downloads Mermaid** (about 5 MB, pinned and
   checksum-verified) to `~/.cache/one-pager/`. Later renders are offline.
 - **Don't edit the shared files in this folder.** In the source repo, the
-  stylesheet, scripts, fonts and `snippets.html` live in `shared/` and are
+  stylesheet, scripts, fonts and `snippets/` live in `shared/` and are
   copied into every skill by `scripts/sync.mjs`. Change them there and
   re-run it.
 - **Running the checker on `template.html` fails on purpose.** It lists

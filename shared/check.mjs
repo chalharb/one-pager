@@ -62,7 +62,7 @@ const own = html
   .replace(/<svg[\s\S]*?<\/svg>/gi, '')
   .replace(/<!-- @fonts:start[\s\S]*?@fonts:end -->/, '');
 const inlineStyles = (own.replace(/<style[\s\S]*?<\/style>/gi, '').match(/<[a-z][^>]*\sstyle\s*=/gi) ?? []).length;
-check(inlineStyles === 0, `${inlineStyles} element(s) with a style attribute: use the blocks in snippets.html, which are already styled`);
+check(inlineStyles === 0, `${inlineStyles} element(s) with a style attribute: use the blocks in snippets/, which are already styled`);
 const offPalette = [...new Set(
   ((own.match(/<style[\s\S]*?<\/style>/gi) ?? []).join('')
     .match(/#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?)\([^)]*\)/gi) ?? [])
@@ -70,8 +70,8 @@ const offPalette = [...new Set(
     .filter((c) => !PALETTE.has(c)),
 )];
 check(offPalette.length === 0, `colours outside the palette: ${offPalette.join(', ')}`);
-check(/<main\b/i.test(own.replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<!--[\s\S]*?-->/g, '')), 'no <main>: paste a shell from snippets.html at the <!-- @main --> marker');
-check(!/<!-- ====|<!-- @main/.test(html), 'leftover snippet or @main marker comments: copy only the markup between them');
+check(/<main\b/i.test(own.replace(/<style[\s\S]*?<\/style>/gi, '').replace(/<!--[\s\S]*?-->/g, '')), 'no <main>: paste a shell from snippets/shells/ at the <!-- @main --> marker');
+check(!/<!-- snippet\b|<!-- @main/.test(html), 'leftover snippet header or @main marker comment: paste only the markup below a snippet\'s header');
 
 const deadLinks = html.match(/<a\b[^>]*\bhref=["']\s*#?\s*["']/gi) ?? [];
 check(deadLinks.length === 0, `${deadLinks.length} link(s) with an empty or "#" href: use the real URL or remove the entry`);

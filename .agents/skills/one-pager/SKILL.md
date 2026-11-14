@@ -8,7 +8,7 @@ description: Generate a "one-pager" — a single self-contained HTML file that e
 Turn any subject into one self-contained `.html` file that reads well on
 screen and prints as exactly one Letter page. The skill is a page frame
 with every style already in it (`template.html`), a catalogue of shells and
-blocks to build the page from (`snippets.html`), two worked examples
+blocks to build the page from (`snippets/`), two worked examples
 (`examples/`), diagram and chart renderers (`diagram.mjs`, `chart.mjs`), a
 font embedder (`fonts.mjs`), and a checker (`check.mjs`) that enforces the
 rules below. For more than one page, use the summarize-in skill.
@@ -46,7 +46,7 @@ as `.claude/skills` or `.agents/skills`.
    - A path the user names always wins.
 
    Copy `<skill-dir>/template.html` to that path, then build the page
-   from `<skill-dir>/snippets.html` as described in **Building the page**
+   from `<skill-dir>/snippets/` as described in **Building the page**
    below: one shell, then the blocks that suit the content. Replace every
    `{{PLACEHOLDER}}`.
 5. **Render the figure, if any.** Skip this if the page has none.
@@ -89,7 +89,9 @@ as `.claude/skills` or `.agents/skills`.
 
 `template.html` is the frame: the stylesheet, the header (kicker, title,
 lede) and the footer. Between them is a `<!-- @main -->` marker. Read
-`snippets.html` and fill the frame from it in this order.
+`<skill-dir>/snippets/INDEX.md`, which lists every shell and block with
+when to use it, then open only the files you pick. Fill the frame in this
+order.
 
 1. **Pick one shell** and paste it at the marker, replacing the comment.
    - **Explainer** (`<main>`): the reader wants to *understand* something.
@@ -100,28 +102,15 @@ lede) and the footer. Between them is a `<!-- @main -->` marker. Read
      dashboards and runbooks, and the people to contact. Sections flow down
      two balanced columns. Cheat sheets, "where everything lives" pages,
      team directories. `examples/directory.html`.
-2. **Fill it with blocks.** Each block in `snippets.html` says when to use
+2. **Fill it with blocks.** Each block in the index says when to use
    it, where it fits, and its limit. Paste the markup only, without the
-   catalogue comments, and repeat `<li>`, `<tr>` or `<section>` as needed.
+   header comment, and repeat `<li>`, `<tr>` or `<section>` as needed.
 3. **Full-width blocks** (stat row, comparison table) go between the header
    and the shell. In the directory shell, a comparison or contacts table
    goes in a `<section class="span">` instead.
 
-| Block | Use it for |
-|---|---|
-| paragraph section, point list | The explanation itself |
-| steps | An ordered procedure |
-| facts | Short label / value pairs: owner, version, cost |
-| terms | A glossary |
-| link list | Repos, sites, dashboards, docs, each with a short printed URL |
-| contacts | Who to ask, with role and email or channel |
-| command | A command, config or query people copy |
-| timeline | History, a rollout plan, deadlines |
-| comparison | Two to four options against the same criteria |
-| stat row | Two to four numbers that are the point (off by default) |
-| diagram | A flow or structure that is clearer drawn (one figure at most) |
-| chart | A bar or line chart of sourced numbers (one figure at most) |
-| callout | The takeaway or the one thing not to miss (one at most) |
+The index ends with a short guide to choosing between similar blocks
+(comparison or facts, steps or point list, chart or stat row).
 
 Composition rules:
 
@@ -266,7 +255,7 @@ printed PDF.
   one, the print check is reported as `SKIPPED` and the other checks
   still run, so say that the page length was not verified.
 - **Don't edit the shared files in this folder.** In the source repo, the
-  stylesheet, scripts, fonts and `snippets.html` live in `shared/` and are
+  stylesheet, scripts, fonts and `snippets/` live in `shared/` and are
   copied into every skill by `scripts/sync.mjs`. Change them there and
   re-run it. The palette appears in `shared/style.css` (light, dark and
   print) and in the `PALETTE` list in `shared/check.mjs`.

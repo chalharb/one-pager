@@ -1,0 +1,14 @@
+<!-- snippet
+name: contacts
+use: Who to ask: area, name, role, email or channel.
+fits: full width (directory: section.span)
+limit: ~10 people
+notes: Only names, roles and addresses the user gave you or a source shows. Stacks into cards on phones.
+-->
+      <section class="span">
+        <h2>{{HEADING}}</h2>
+        <table class="contacts">
+          <thead><tr><th>Area</th><th>Name</th><th>Role</th><th>Reach</th></tr></thead>
+          <tr><td>{{AREA}}</td><td>{{NAME}}</td><td>{{ROLE}}</td><td><span class="reach">{{EMAIL_OR_CHANNEL}}</span></td></tr>
+        </table>
+      </section>

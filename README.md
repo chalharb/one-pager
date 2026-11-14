@@ -184,7 +184,7 @@ Each skill folder has the same files, so it works when installed alone:
 |---|---|
 | `SKILL.md` | Instructions the agent follows when the skill runs |
 | `template.html` | Page frame with every style, light, dark, and print |
-| `snippets.html` | Shells (explainer, directory, report) and blocks (link list, contacts, chart, comparison, timeline…) to build pages from |
+| `snippets/` | Shells (explainer, directory, report) and blocks (link list, contacts, chart, comparison, timeline…), one file each, with an `INDEX.md` of when to use what |
 | `chart.mjs` | Renders bar and line charts from a small JSON spec to inline SVG in the palette (Node only) |
 | `diagram.mjs` | Renders Mermaid diagrams to inline SVG in the palette (needs Chrome; downloads Mermaid once to `~/.cache/one-pager/`) |
 | `fonts.mjs`, `fonts.py` | Embed the fonts into a finished page as base64 (Python for sandboxes without Node) |
@@ -202,10 +202,15 @@ check out as plain text files.
 
 Everything except `SKILL.md`, `template.html`, and `examples/` is shared. The
 single source is `shared/`; `scripts/sync.mjs` copies it into every skill and
-writes `shared/style.css` into each template and example:
+writes `shared/style.css` into each template and example.
+
+Each snippet in `shared/snippets/shells/` and `shared/snippets/blocks/` starts
+with a header comment (`name`, `use`, `fits`, and optionally `limit` and
+`notes`). The sync builds `snippets/INDEX.md` from those headers plus the
+hand-written `shared/snippets/choosing.md`, so to add a block you add one file:
 
 ```bash
-node scripts/sync.mjs          # after editing anything in shared/
+node scripts/sync.mjs          # after editing anything in shared/ (rebuilds INDEX.md)
 node scripts/sync.mjs --check  # what CI runs: fails if a copy is out of date
 ```
 
