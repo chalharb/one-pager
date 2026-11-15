@@ -83,8 +83,8 @@ reader who is new to the subject.
    reference.
 3. **Path.** `where.mjs` prints JSON. Write to `file`, or to `next` if `exists` is true
    and the user didn't ask to replace the earlier summary. Create the folder if needed.
-   - Inside a git repo, files go to `<repo-root>/.summarize-in/`.
-   - Outside a repo, files go to `$HOME/.summarize-in/`.
+   - Inside a git repo, files go to `<repo-root>/.summaries/`.
+   - Outside a repo, files go to `$HOME/.summaries/`.
    - A path the user names always wins.
    - In a hosted sandbox with no project, use its output folder and return a download
      link.
@@ -173,8 +173,8 @@ comparison card), create a custom block. Don't inline one-off styles in the summ
 node <skill-dir>/scripts/new-block.mjs <name> --use "when to use it" [--scope project|user]
 ```
 
-`new-block.mjs` writes `<name>.html` under `.summarize-in/blocks/` (project scope inside
-a repo, or user scope in `$HOME/.summarize-in/blocks/`). Edit it following the rules in
+`new-block.mjs` writes `<name>.html` under `.summaries/blocks/` (project scope inside
+a repo, or user scope in `$HOME/.summaries/blocks/`). Edit it following the rules in
 `assets/blocks/README.md`, use it with `data-block="<name>"`, and build. Tell the user
 where the block was saved so they can reuse or commit it.
 

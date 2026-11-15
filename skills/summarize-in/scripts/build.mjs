@@ -13,7 +13,7 @@
 //   3. Collects the blocks named by data-block="..." and inlines the wrapper CSS plus only those
 //      blocks' CSS, then the sans font as base64 (code uses the system monospace font), between <!-- si:styles --> and <!-- /si:styles -->.
 //
-// Custom blocks are read from <repo>/.summarize-in/blocks/ and ~/.summarize-in/blocks/ and
+// Custom blocks are read from <repo>/.summaries/blocks/ and ~/.summaries/blocks/ and
 // override built-ins of the same name.
 //
 // Exit codes: 0 built, 1 build error (unknown block, failed diagram, missing marker), 2 bad arguments.

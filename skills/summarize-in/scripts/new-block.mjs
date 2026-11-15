@@ -4,8 +4,8 @@
 // usage:
 //   node scripts/new-block.mjs <name> [--use "when to use it"] [--scope project|user] [--from DIR] [--force] [--dry-run]
 //
-//   --scope project  <repo-root>/.summarize-in/blocks/ (default inside a git repo)
-//   --scope user     ~/.summarize-in/blocks/ (default outside a repo; shared by every project)
+//   --scope project  <repo-root>/.summaries/blocks/ (default inside a git repo)
+//   --scope user     ~/.summaries/blocks/ (default outside a repo; shared by every project)
 //
 // The block's CSS must be scoped to its root class .si-<name>; build.mjs warns otherwise.
 // A custom block with a built-in's name overrides the built-in.

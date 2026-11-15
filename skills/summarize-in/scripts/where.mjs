@@ -5,12 +5,12 @@
 //   node scripts/where.mjs --topic "how edge networks work" [--from DIR]
 //
 // Prints JSON:
-//   { "root": ".../.summarize-in", "scope": "project|user|env", "repo": "<git root or null>",
-//     "file": ".../.summarize-in/how-edge-networks-work.html", "exists": false,
-//     "blocks": [".../.summarize-in/blocks", "~/.summarize-in/blocks"], "date": "November 2026" }
+//   { "root": ".../.summaries", "scope": "project|user|env", "repo": "<git root or null>",
+//     "file": ".../.summaries/how-edge-networks-work.html", "exists": false,
+//     "blocks": [".../.summaries/blocks", "~/.summaries/blocks"], "date": "November 2026" }
 //
-// Rules: SUMMARIZE_IN_DIR wins; inside a git repo the root is <repo-root>/.summarize-in
-// (even from a subdirectory); otherwise ~/.summarize-in. When "file" already exists,
+// Rules: SUMMARIZE_IN_DIR wins; inside a git repo the root is <repo-root>/.summaries
+// (even from a subdirectory); otherwise ~/.summaries. When "file" already exists,
 // "next" holds the first free numbered name (-2, -3, ...).
 // Exit codes: 0 ok, 2 bad arguments.
 import { existsSync } from 'node:fs';

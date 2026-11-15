@@ -4,7 +4,7 @@
     {
       "id": "two-page-topic",
       "prompt": "Summarize how edge networks function in 2 pages.",
-      "expected_output": "A standalone HTML file at <repo>/.summarize-in/how-edge-networks-function.html with two .si-page sheets that passes check.mjs.",
+      "expected_output": "A standalone HTML file at <repo>/.summaries/how-edge-networks-function.html with two .si-page sheets that passes check.mjs.",
       "assertions": [
         "check.mjs exits 0 on the output file",
         "data-pages is 2 and the PDF prints 2 pages",
@@ -37,9 +37,9 @@
     {
       "id": "custom-block",
       "prompt": "Summarize our Q3 metrics in 1 page and show the three headline numbers as big stat tiles.",
-      "expected_output": "A custom 'stat' block scaffolded with new-block.mjs into .summarize-in/blocks/ and used in the summary.",
+      "expected_output": "A custom 'stat' block scaffolded with new-block.mjs into .summaries/blocks/ and used in the summary.",
       "assertions": [
-        ".summarize-in/blocks/stat.html (or similar) exists",
+        ".summaries/blocks/stat.html (or similar) exists",
         "build.mjs prints no unscoped-selector warning for it",
         "check.mjs exits 0"
       ]

@@ -73,8 +73,8 @@ one-pager on …" and the agent will pick the skill from its description.
 | `cheatsheet`, `brief`, `overview` | Changes the content: dense lists, tables, and code for a cheatsheet, prose for a brief or overview. |
 
 **Where files go:** inside a git repo, summaries are written to
-`<repo-root>/.summarize-in/<topic>.html`, even when you run from a subdirectory.
-Outside a repo they go to `~/.summarize-in/`. Set `SUMMARIZE_IN_DIR` to choose another
+`<repo-root>/.summaries/<topic>.html`, even when you run from a subdirectory.
+Outside a repo they go to `~/.summaries/`. Set `SUMMARIZE_IN_DIR` to choose another
 folder. When the summary is ready, the agent asks whether to open it in your default
 browser or in your editor's preview.
 
@@ -97,7 +97,7 @@ Summaries are put together from small HTML blocks in
 
 Each block's CSS is scoped to its own `.si-<name>` class and uses only shared theme
 tokens. When the agent needs something new, such as stat tiles or a timeline, it
-scaffolds a **custom block** in `.summarize-in/blocks/`, either in the repo or in your
+scaffolds a **custom block** in `.summaries/blocks/`, either in the repo or in your
 home folder. Custom blocks sit next to your summaries and override built-ins with the
 same name:
 

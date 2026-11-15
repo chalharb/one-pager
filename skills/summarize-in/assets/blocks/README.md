@@ -48,8 +48,8 @@ reset to light for print.
 
 Custom blocks live outside the skill, next to the generated summaries:
 
-- `<repo-root>/.summarize-in/blocks/` for one project
-- `$HOME/.summarize-in/blocks/` for every project
+- `<repo-root>/.summaries/blocks/` for one project
+- `$HOME/.summaries/blocks/` for every project
 
 Scaffold one with `node scripts/new-block.mjs <name> --use "when to use it"`. The rules:
 

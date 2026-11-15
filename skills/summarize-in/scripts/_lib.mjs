@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 export const SKILL_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 export const BUILTIN_BLOCKS = join(SKILL_DIR, 'assets', 'blocks');
 export const FONTS_DIR = join(SKILL_DIR, 'assets', 'fonts');
-export const HOME_NAME = '.summarize-in';
+export const HOME_NAME = '.summaries';
 
 // ---------------------------------------------------------------------------
 // Where things live
@@ -27,8 +27,8 @@ export function gitTop(dir) {
 /**
  * The centralized home for generated summaries and custom blocks.
  *   SUMMARIZE_IN_DIR env var        -> that directory          (scope "env")
- *   inside a git repo               -> <repo-root>/.summarize-in (scope "project")
- *   otherwise                       -> ~/.summarize-in           (scope "user")
+ *   inside a git repo               -> <repo-root>/.summaries (scope "project")
+ *   otherwise                       -> ~/.summaries           (scope "user")
  */
 export function locate(fromDir = process.cwd()) {
   if (process.env.SUMMARIZE_IN_DIR) {
