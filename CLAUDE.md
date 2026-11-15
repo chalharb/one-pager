@@ -2,17 +2,19 @@
 
 ## Running headless Chrome in Claude Code cloud sessions
 
-The cloud container runs as root and has Playwright's browsers in `/opt/pw-browsers/`.
-Two things break the skill's Chrome-based scripts (`check.mjs`, Mermaid rendering in
-`build.mjs`) there:
+The cloud container runs as root, and its `CHROME_BIN` points at a full Chromium build.
+Two things used to break the skill's Chrome-based scripts there:
 
-- **Full Chromium hangs with a fresh `--user-data-dir`.** `/opt/pw-browsers/chromium`
-  never exits (no DOM dump, no PDF) when given a new profile folder, which the scripts
-  always pass. Extra flags (`--disable-background-networking`, `--no-proxy-server`, …)
-  don't help.
-- **As root, Chrome needs `--no-sandbox`**, which the scripts don't pass.
+- **Full Chromium hangs with a fresh `--user-data-dir`** unless it also gets
+  `--disable-field-trial-config`. It never renders or exits.
+- **As root, Chrome needs `--no-sandbox`.**
 
-Fix: point `CHROME_BIN` at a wrapper around the headless shell build instead.
+The scripts in `skills/summarize-in/scripts/` now pass both flags (see `chromeFlags()` in
+`_lib.mjs`), so `build.mjs` and `check.mjs` should just work. If you run Chrome headless
+yourself for anything else here, pass the same two flags rather than debugging the hang
+again.
+
+If you're on a checkout that predates that fix, use Playwright's headless shell instead:
 
 ```bash
 HS=$(ls /opt/pw-browsers/chromium_headless_shell-*/chrome-headless-shell-linux64/chrome-headless-shell | head -1)
@@ -20,9 +22,12 @@ printf '#!/bin/sh\nexec %s --no-sandbox "$@"\n' "$HS" > /tmp/chrome-hs && chmod 
 CHROME_BIN=/tmp/chrome-hs node skills/summarize-in/scripts/check.mjs <file.html>
 ```
 
-A two-page check finishes in under a second this way. Do this first instead of
-debugging the hang again.
+## Mermaid in cloud sessions
 
-Also: the network policy blocks `cdn.jsdelivr.net`, so the Mermaid download in
-`build.mjs` fails (`fetch failed`). Builds of files without diagrams still work; say
-that diagram rendering was not verified rather than chasing it.
+The network policy blocks `cdn.jsdelivr.net`, so `build.mjs` can't download Mermaid
+(`fetch failed`). The npm registry is allowed, and its copy matches the pinned checksum:
+
+```bash
+cd "$(mktemp -d)" && npm pack mermaid@12.2.0 --silent && tar xzf mermaid-12.2.0.tgz
+mkdir -p ~/.cache/summarize-in && cp package/dist/mermaid.min.js ~/.cache/summarize-in/mermaid-12.2.0.min.js
+```
