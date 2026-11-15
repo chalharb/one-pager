@@ -15,11 +15,11 @@
 // Exit codes: 0 ok, 2 bad arguments.
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { blockDirs, locate, parseArgs, slugify } from './_lib.mjs';
+import { blockDirs, locate, parseArgs, scriptCmd, slugify } from './_lib.mjs';
 
 const args = parseArgs(process.argv.slice(2), ['help']);
 if (args.help || !args.topic) {
-  console.log(`usage: node scripts/where.mjs --topic "<topic>" [--from DIR]   (see the header of this file)`);
+  console.log(`usage: ${scriptCmd('where.mjs')} --topic "<topic>" [--from DIR]   (see the header of this file)`);
   process.exit(args.help ? 0 : 2);
 }
 const from = resolve(args.from ?? process.cwd());

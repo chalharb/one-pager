@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": "two-page-topic",
-      "prompt": "/summarize-in 2 pages how edge networks function",
+      "prompt": "Summarize how edge networks function in 2 pages.",
       "expected_output": "A standalone HTML file at <repo>/.summarize-in/how-edge-networks-function.html with two .si-page sheets that passes check.mjs.",
       "assertions": [
         "check.mjs exits 0 on the output file",
@@ -15,7 +15,7 @@
     },
     {
       "id": "conversation-one-pager",
-      "prompt": "/summarize-in 1 page the research we've done in the chat",
+      "prompt": "Can you boil the research we've done in this chat down to a 1 page summary?",
       "files": [],
       "expected_output": "A one-page summary of decisions and findings from the conversation, sourced to 'This conversation'.",
       "assertions": [
@@ -26,7 +26,7 @@
     },
     {
       "id": "cheatsheet",
-      "prompt": "/summarize-in a 1 page cheatsheet for using this skill",
+      "prompt": "Make me a 1 page cheatsheet for using the summarize-in skill.",
       "expected_output": "A dense one-page cheatsheet built mostly from lists, tables, and code blocks.",
       "assertions": [
         "check.mjs exits 0 with no wrapped-code warning",

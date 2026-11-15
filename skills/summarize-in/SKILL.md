@@ -97,7 +97,8 @@ reader who is new to the subject.
    - Run `node <skill-dir>/scripts/build.mjs --list` to see custom blocks too.
    - `assets/examples/demo.html` shows a finished 2-page summary,
      `assets/examples/landscape.html` a 1-page landscape summary, and
-     `assets/examples/blocks.html` every block.
+     `assets/examples/blocks.html` every block. They are unbuilt source, the same
+     form you write before running the build.
 5. **Build.** Building is idempotent. Re-run it after every edit. It fails on unknown
    blocks and on Mermaid syntax errors, and prints the bad source.
 6. **Check.** Fix every `FAIL` and re-run until it prints `OK`. Read the warnings too.
@@ -182,7 +183,7 @@ where the block was saved so they can reuse or commit it.
 | Script | Purpose |
 | --- | --- |
 | `scripts/where.mjs` | Output path, custom-block folders, today's date (JSON). |
-| `scripts/build.mjs` | Inline styles and fonts, highlight code, render Mermaid. `--list` shows blocks. |
+| `scripts/build.mjs` | Inline styles and the font, highlight code, render Mermaid. `--list` shows blocks. |
 | `scripts/check.mjs` | Standalone checks plus per-page fill, overflow, and PDF page count. `--json`, `--pdf`, `--shot`. |
 | `scripts/open.mjs` | Open in the default browser. `--detect` reports the editor and preview options. |
 | `scripts/new-block.mjs` | Scaffold a custom block in the centralized blocks folder. |

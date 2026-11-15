@@ -5,9 +5,9 @@ Each block is one `.html` file: a header comment (`@block`, `@use`, `@options`),
 `scripts/build.mjs` inlines the CSS of only the blocks a document uses (found by their
 `data-block="<name>"` attribute), so every summary is a single standalone file.
 
-See every block rendered in `../examples/blocks.html`, and real summaries in
+See every block in `../examples/blocks.html`, and real summaries in
 `../examples/demo.html` (2 pages, portrait) and `../examples/landscape.html` (1 page,
-landscape).
+landscape). The examples are unbuilt source, the form you write before running the build.
 
 ## Available blocks
 

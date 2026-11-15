@@ -9,7 +9,7 @@ It works with any agent that supports skills, including Claude Code, Codex, GitH
 Copilot, Gemini CLI, Cursor, and OpenCode.
 
 <p align="center">
-  <img src="docs/preview.png" alt="A two-page summary of how edge networks work, shown half in light mode and half in dark mode" width="640">
+  <img src="docs/preview.webp" alt="A two-page summary of how edge networks work, shown half in light mode and half in dark mode" width="640">
 </p>
 
 ```text
@@ -19,9 +19,9 @@ Copilot, Gemini CLI, Cursor, and OpenCode.
 /summarize-in 1 landscape page TLS handshake
 ```
 
-Examples: [2-page summary](skills/summarize-in/assets/examples/demo.html) ·
-[1 landscape page](skills/summarize-in/assets/examples/landscape.html) ·
-[every block](skills/summarize-in/assets/examples/blocks.html)
+Examples: [2-page summary](docs/examples/demo.html) ·
+[1 landscape page](docs/examples/landscape.html) ·
+[every block](docs/examples/blocks.html)
 
 ## Install
 
@@ -47,7 +47,9 @@ Start a new agent session afterwards, because skills load at startup.
 **Requirements:**
 
 - **Node.js 18+**
-- **Chrome, Chromium, or Edge**, for Mermaid diagrams and the page-count check
+- **Chrome, Chromium, or Edge**, for Mermaid diagrams and the page-count check. The scripts
+  look in the usual install locations, Playwright's browser cache, and `PATH`; set
+  `CHROME_BIN` to use a specific one.
 - **Network access once**, to cache a pinned, checksum-verified Mermaid build
 
 ## Use
@@ -108,7 +110,7 @@ node skills/summarize-in/scripts/new-block.mjs stat --use "Two to four headline 
 ```text
 where.mjs     picks the output path and lists the custom-block folders
    ↓          the agent writes pages from blocks
-build.mjs     inlines only the CSS of blocks used, plus fonts, highlighting, and diagrams
+build.mjs     inlines only the CSS of blocks used, plus the font, highlighting, and diagrams
    ↓
 check.mjs     checks the file is standalone, then measures each page in headless Chrome
    ↓          (fill %, overflow in px, diagram scale, code wrapping, PDF page count)
@@ -116,7 +118,8 @@ open.mjs      opens the file in the browser, once you say yes
 ```
 
 The output has no scripts, no external requests, and no shared stylesheet. The demo
-above is a single 127 KB file.
+above is a single 96 KB file. Body text uses an embedded font so page fit is exact on
+every machine; code uses the reader's system monospace font.
 
 ## Repository layout
 
@@ -124,22 +127,25 @@ above is a single 127 KB file.
 skills/summarize-in/      the skill (this is what gets installed)
 ├── SKILL.md              instructions the agent loads
 ├── assets/blocks/        built-in blocks + README
-├── assets/examples/      demo, landscape, and block gallery (built output)
-├── assets/fonts/         Schibsted Grotesk + Geist Mono (SIL OFL 1.1)
-├── scripts/              where / build / check / open / new-block (Node, no dependencies)
-└── evals/                eval prompts and trigger queries
-tools/                    install.sh, validate.py, new_skill.py
-templates/skill/          scaffold for new skills
-AUTHORING.md              skill-writing guide and review checklist
+├── assets/examples/      demo, landscape, and block gallery (unbuilt source)
+├── assets/fonts/         Schibsted Grotesk (SIL OFL 1.1)
+└── scripts/              where / build / check / open / new-block (Node, no dependencies)
+docs/examples/            the same examples, built
+evals/summarize-in/       eval prompts and trigger queries
+tools/install.sh          link or copy the skill into each harness
 ```
 
 ## Develop
 
+The examples in `skills/summarize-in/assets/examples/` are unbuilt so they stay small
+when an agent reads them. Edit those, then rebuild the copies in `docs/examples/`:
+
 ```bash
-node skills/summarize-in/scripts/build.mjs skills/summarize-in/assets/examples/demo.html
-node skills/summarize-in/scripts/check.mjs skills/summarize-in/assets/examples/demo.html --pdf /tmp/demo.pdf
-python3 tools/validate.py skills --strict        # spec + portability lint
-python3 tools/new_skill.py my-skill --description "Use this skill when …"
+for f in demo landscape blocks; do
+  cp skills/summarize-in/assets/examples/$f.html docs/examples/$f.html
+  node skills/summarize-in/scripts/build.mjs docs/examples/$f.html
+  node skills/summarize-in/scripts/check.mjs docs/examples/$f.html
+done
 ```
 
 Keep skills harness-agnostic:
@@ -149,8 +155,7 @@ Keep skills harness-agnostic:
 - Make paths relative to the skill root.
 - Make scripts non-interactive.
 
-See [AUTHORING.md](AUTHORING.md) for the full checklist. Skill folder locations per
-harness:
+Skill folder locations per harness:
 
 | Harness | Project | User |
 | --- | --- | --- |

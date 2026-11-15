@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { FONTS_DIR, findChrome } from './_lib.mjs';
+import { FONTS_DIR, chromeFlags, findChrome } from './_lib.mjs';
 
 const MERMAID_VERSION = '12.2.0';
 const MERMAID_SHA256 = 'a8a6a6f805b074a8261a2825c86f99c8054acb3b35f50bb7e24a4f9f2c3c3b9f';
@@ -93,8 +93,7 @@ body{font-family:"Schibsted Grotesk"}
     const file = join(tmp, 'render.html');
     writeFileSync(file, page);
     const dom = execFileSync(chrome, [
-      '--headless=new', '--disable-gpu', '--allow-file-access-from-files', '--no-first-run',
-      `--user-data-dir=${join(tmp, 'profile')}`, '--virtual-time-budget=20000', '--dump-dom', pathToFileURL(file).href,
+      ...chromeFlags(join(tmp, 'profile')), '--virtual-time-budget=20000', '--dump-dom', pathToFileURL(file).href,
     ], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 90_000, stdio: ['ignore', 'pipe', 'ignore'] });
     const encoded = dom.match(/RESULT:([A-Za-z0-9+/=]+)/)?.[1];
     if (!encoded) throw new Error('Mermaid renderer produced no result (Chrome timed out or Mermaid failed to load)');

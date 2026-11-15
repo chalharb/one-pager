@@ -11,12 +11,12 @@ import { existsSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { parseArgs } from './_lib.mjs';
+import { parseArgs, scriptCmd } from './_lib.mjs';
 
 const args = parseArgs(process.argv.slice(2), ['detect', 'help']);
 const file = args._[0];
 if (args.help || !file) {
-  console.log('usage: node scripts/open.mjs <file.html> [--detect]');
+  console.log(`usage: ${scriptCmd('open.mjs')} <file.html> [--detect]`);
   process.exit(args.help ? 0 : 2);
 }
 if (!existsSync(file)) { console.error(`error: ${file} not found`); process.exit(2); }
@@ -40,10 +40,14 @@ const abs = resolve(file);
 const info = { file: abs, url: pathToFileURL(abs).href, editor, editorPreview: editor ? hints[editor] : null };
 if (args.detect) { console.log(JSON.stringify(info, null, 2)); process.exit(0); }
 
+// On Windows, `start` treats its first quoted argument as a window title, so it gets an empty
+// "" title first. Node would escape those quotes as \"\" (which cmd doesn't understand), so
+// the command line is passed verbatim: cmd /d /s /c "start "" "C:\path\file.html"".
+const win = process.platform === 'win32';
 const [cmd, cmdArgs] =
   process.platform === 'darwin' ? ['open', [abs]]
-  : process.platform === 'win32' ? ['cmd', ['/c', 'start', '""', abs]]
+  : win ? ['cmd', ['/d', '/s', '/c', `"start "" "${abs}""`]]
   : ['xdg-open', [abs]];
-const child = spawn(cmd, cmdArgs, { stdio: 'ignore', detached: true });
+const child = spawn(cmd, cmdArgs, { stdio: 'ignore', detached: true, windowsVerbatimArguments: win });
 child.on('error', (e) => { console.error(`error: could not run ${cmd}: ${e.message}. Open ${info.url} manually.`); process.exit(1); });
 child.on('spawn', () => { child.unref(); console.log(JSON.stringify({ ...info, opened: 'default-browser' }, null, 2)); });

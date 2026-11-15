@@ -19,9 +19,11 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { findChrome, parseArgs } from './_lib.mjs';
+import { chromeFlags, findChrome, parseArgs, scriptCmd } from './_lib.mjs';
+
+const BUILD = scriptCmd('build.mjs');
 
 const args = parseArgs(process.argv.slice(2), ['json', 'help']);
 const file = args._[0];
@@ -58,14 +60,14 @@ const localSrc = [...html.matchAll(/<(?:img|source|video|audio)\b[^>]*\bsrc=["']
 check(localSrc.length === 0, `references local files that will not travel with the page (inline as data: URIs): ${localSrc.join(', ')}`);
 
 const styleBlock = html.match(/<!-- si:styles --><style>([\s\S]*?)<\/style><!-- \/si:styles -->/)?.[1];
-check(styleBlock, 'styles not inlined: run node scripts/build.mjs on this file');
+check(styleBlock, `styles not inlined: run ${BUILD} on this file`);
 if (styleBlock) {
-  check(styleBlock.includes('@font-face'), 'fonts not embedded: run node scripts/build.mjs on this file');
+  check(styleBlock.includes('@font-face'), `fonts not embedded: run ${BUILD} on this file`);
   const used = [...new Set([...html.replace(/<!-- si:styles -->[\s\S]*?<!-- \/si:styles -->/, '').matchAll(/\bdata-block="([^"]+)"/g)].map((m) => m[1]))];
   const stale = used.filter((n) => !styleBlock.includes(`/* block: ${n}`));
-  check(stale.length === 0, `CSS missing for block(s) ${stale.join(', ')}: re-run node scripts/build.mjs`);
+  check(stale.length === 0, `CSS missing for block(s) ${stale.join(', ')}: re-run ${BUILD}`);
 }
-check(!/<pre class="si-mermaid__src">/.test(html), 'unrendered Mermaid diagram: run node scripts/build.mjs');
+check(!/<pre class="si-mermaid__src">/.test(html), `unrendered Mermaid diagram: run ${BUILD}`);
 
 const docTag = html.match(/<main[^>]*class="si-doc"[^>]*>/)?.[0] ?? '';
 const promised = Number(docTag.match(/data-pages="(\d+)"/)?.[1] ?? NaN);
@@ -133,20 +135,16 @@ if (!chrome) {
 } else {
   const tmp = mkdtempSync(join(tmpdir(), 'summarize-in-check-'));
   const run = (url, extra, opts = {}) => execFileSync(chrome, [
-    '--headless=new', '--disable-gpu', '--hide-scrollbars', '--no-first-run', '--allow-file-access-from-files',
-    `--user-data-dir=${join(tmp, 'profile')}`, ...extra, url,
+    ...chromeFlags(join(tmp, 'profile')), '--hide-scrollbars', ...extra, url,
   ], { timeout: 90_000, maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', opts.capture ? 'pipe' : 'ignore', 'ignore'], encoding: opts.capture ? 'utf8' : undefined });
   try {
-    // Measure in a copy next to the original so relative paths behave the same.
-    const probe = join(dirname(resolve(file)), `.si-measure-${process.pid}.html`);
+    // Measure a copy in the temp folder. The static checks above already reject local file
+    // references, so the copy renders the same as the original.
+    const probe = join(tmp, 'measure.html');
     writeFileSync(probe, html.replace(/<\/body>/i, `${MEASURE}</body>`));
-    try {
-      const dom = run(pathToFileURL(probe).href, ['--window-size=1400,1200', '--virtual-time-budget=10000', '--dump-dom'], { capture: true });
-      const enc = dom.match(/MEASURE:([A-Za-z0-9+/=]+)/)?.[1];
-      measured = enc ? JSON.parse(Buffer.from(enc, 'base64').toString('utf8')) : [];
-    } finally {
-      rmSync(probe, { force: true });
-    }
+    const dom = run(pathToFileURL(probe).href, ['--window-size=1400,1200', '--virtual-time-budget=10000', '--dump-dom'], { capture: true });
+    const enc = dom.match(/MEASURE:([A-Za-z0-9+/=]+)/)?.[1];
+    measured = enc ? JSON.parse(Buffer.from(enc, 'base64').toString('utf8')) : [];
     for (const m of measured) {
       const fill = Math.round((m.natural / m.sheet) * 100);
       m.fill = fill;
@@ -166,7 +164,7 @@ if (!chrome) {
     printed = (pdfText.match(/\/Type\s*\/Page(?![a-zA-Z])/g) ?? []).length;
     const box = pdfText.match(/\/MediaBox\s*\[\s*[\d.]+\s+[\d.]+\s+([\d.]+)\s+([\d.]+)/);
     const wantLandscape = /data-orientation="landscape"/.test(docTag);
-    if (box) check((+box[1] > +box[2]) === wantLandscape, `PDF sheets are ${+box[1] > +box[2] ? 'landscape' : 'portrait'} but data-orientation says ${wantLandscape ? 'landscape' : 'portrait'}: re-run node scripts/build.mjs`);
+    if (box) check((+box[1] > +box[2]) === wantLandscape, `PDF sheets are ${+box[1] > +box[2] ? 'landscape' : 'portrait'} but data-orientation says ${wantLandscape ? 'landscape' : 'portrait'}: re-run ${BUILD}`);
     check(printed === promised, `prints as ${printed} page(s); the budget is ${promised}`);
     if (args.pdf) notes.push(`pdf: ${pdf}`);
     if (args.shot) {

@@ -2,7 +2,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { homedir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { delimiter, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const SKILL_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -103,14 +103,59 @@ export function unscopedSelectors(block) {
 // Chrome
 // ---------------------------------------------------------------------------
 
+/**
+ * Playwright's chrome-headless-shell builds. They start fast, exit cleanly, and don't hang
+ * on a fresh profile the way some full Chromium builds do in containers.
+ */
+function headlessShells() {
+  const roots = [
+    process.env.PLAYWRIGHT_BROWSERS_PATH,
+    '/opt/pw-browsers',
+    join(homedir(), '.cache', 'ms-playwright'),
+    join(homedir(), 'Library', 'Caches', 'ms-playwright'),
+    process.env.LOCALAPPDATA && join(process.env.LOCALAPPDATA, 'ms-playwright'),
+  ].filter(Boolean);
+  const found = [];
+  for (const root of roots) {
+    if (!existsSync(root)) continue;
+    let dirs = [];
+    try { dirs = readdirSync(root).filter((d) => d.startsWith('chromium_headless_shell-')).sort().reverse(); } catch { continue; }
+    for (const d of dirs) {
+      let subs = [];
+      try { subs = readdirSync(join(root, d)).filter((s) => s.startsWith('chrome-headless-shell')); } catch { continue; }
+      for (const sub of subs) {
+        found.push(join(root, d, sub, 'chrome-headless-shell'), join(root, d, sub, 'chrome-headless-shell.exe'));
+      }
+    }
+  }
+  return found;
+}
+
+/** First match for any of `names` on PATH. */
+function onPath(names) {
+  const exts = process.platform === 'win32' ? ['.exe', ''] : [''];
+  for (const dir of (process.env.PATH ?? '').split(delimiter)) {
+    if (!dir) continue;
+    for (const n of names) for (const e of exts) {
+      const p = join(dir, n + e);
+      if (existsSync(p)) return p;
+    }
+  }
+  return null;
+}
+
+/** Chrome, Chromium, or Edge. CHROME_BIN / CHROME_PATH win; null when none is found. */
 export function findChrome() {
+  const local = process.env.LOCALAPPDATA;
   const candidates = [
     process.env.CHROME_BIN,
     process.env.CHROME_PATH,
+    ...headlessShells(),
     '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     '/Applications/Chromium.app/Contents/MacOS/Chromium',
     '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
     '/Applications/Brave Browser.app/Contents/MacOS/Brave Browser',
+    join(homedir(), 'Applications', 'Google Chrome.app', 'Contents', 'MacOS', 'Google Chrome'),
     '/usr/bin/google-chrome',
     '/usr/bin/google-chrome-stable',
     '/usr/bin/chromium',
@@ -119,10 +164,32 @@ export function findChrome() {
     '/snap/bin/chromium',
     'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
     'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+    local && join(local, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
     'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
   ];
-  return candidates.find((p) => p && existsSync(p)) ?? null;
+  return candidates.find((p) => p && existsSync(p))
+    ?? onPath(['chrome-headless-shell', 'google-chrome', 'google-chrome-stable', 'chromium', 'chromium-browser', 'chrome', 'microsoft-edge', 'msedge']);
 }
+
+/**
+ * Flags every headless run needs.
+ * - A throwaway profile, so a Chrome the user already has open doesn't take over the run.
+ * - --disable-field-trial-config: with a fresh profile and no route to Google's servers,
+ *   full Chromium builds can hang forever before rendering anything (seen in cloud sandboxes).
+ * - --no-sandbox as root: Chrome refuses to start as root (Docker, CI, cloud sandboxes) otherwise.
+ */
+export function chromeFlags(profileDir) {
+  const flags = [
+    '--headless=new', '--disable-gpu', '--no-first-run', '--disable-field-trial-config',
+    '--allow-file-access-from-files', `--user-data-dir=${profileDir}`,
+  ];
+  if (process.getuid?.() === 0) flags.push('--no-sandbox');
+  return flags;
+}
+
+/** The command to run one of this skill's scripts, with an absolute path so it works from any folder. */
+export const scriptCmd = (name) => `node ${join(SKILL_DIR, 'scripts', name)}`;
 
 // ---------------------------------------------------------------------------
 // HTML text helpers

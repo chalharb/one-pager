@@ -13,12 +13,12 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { BUILTIN_BLOCKS, HOME_NAME, locate, parseArgs, slugify } from './_lib.mjs';
+import { BUILTIN_BLOCKS, HOME_NAME, locate, parseArgs, scriptCmd, slugify } from './_lib.mjs';
 
 const args = parseArgs(process.argv.slice(2), ['force', 'dry-run', 'help']);
 const raw = args._[0];
 if (args.help || !raw) {
-  console.log('usage: node scripts/new-block.mjs <name> [--use "..."] [--scope project|user] [--force] [--dry-run]');
+  console.log(`usage: ${scriptCmd('new-block.mjs')} <name> [--use "..."] [--scope project|user] [--force] [--dry-run]`);
   process.exit(args.help ? 0 : 2);
 }
 const name = slugify(raw, 40);
