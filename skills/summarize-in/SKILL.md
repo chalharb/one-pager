@@ -161,8 +161,15 @@ reader who is new to the subject.
   or put the diagram in a `column-1` band.
 - **No scripts, no remote assets.** The checker rejects `<script>`, remote URLs, and
   local image paths. Images must be inline SVG or `data:` URIs.
-- **Keep the markers.** The build writes styles between `<!-- si:styles -->` and
-  `<!-- /si:styles -->` in `<head>`. Don't hand-edit that region; edit blocks instead.
+- **Keep the markers.** The build writes the favicon and styles between
+  `<!-- si:styles -->` and `<!-- /si:styles -->` in `<head>`. Don't hand-edit that
+  region; edit blocks instead.
+- **Set `<title>` to the headline** (or leave `{{TITLE}}` and the build copies the
+  headline). It names the browser tab and the PDF.
+- **Keep the light/dark toggle** (the `#si-theme` checkbox and its label right after
+  `<body>`). The checker fails without it.
+- **Leave `@page` margins at 0.** Any margin gives the browser room to print its own
+  header and footer (file name, date, URL). Page padding lives on `.si-page` instead.
 
 ## Custom blocks
 

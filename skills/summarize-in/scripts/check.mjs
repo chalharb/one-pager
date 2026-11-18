@@ -10,7 +10,8 @@
 //
 // Static checks: doctype/title/viewport, no {{placeholders}}, no <script>, nothing loaded
 // over the network, styles+fonts inlined by build.mjs and current for every block used,
-// no unrendered Mermaid, number of .si-page sections == data-pages.
+// favicon present, light/dark toggle present, every @page margin 0 (so browsers print no
+// header/footer of their own), no unrendered Mermaid, number of .si-page sections == data-pages.
 // Print checks (need Chrome/Chromium/Edge; reported as SKIPPED without one):
 // each page's fill %, vertical overflow in px, content wider than its column, and the
 // printed PDF page count == data-pages.
@@ -59,14 +60,20 @@ check(external.length === 0, `loads external resources (inline them or drop them
 const localSrc = [...html.matchAll(/<(?:img|source|video|audio)\b[^>]*\bsrc=["']?(?!data:|https?:|\/\/)([^"'\s>]+)/gi)].map((m) => m[1]);
 check(localSrc.length === 0, `references local files that will not travel with the page (inline as data: URIs): ${localSrc.join(', ')}`);
 
-const styleBlock = html.match(/<!-- si:styles --><style>([\s\S]*?)<\/style><!-- \/si:styles -->/)?.[1];
+const styleBlock = html.match(/<!-- si:styles -->[\s\S]*?<style>([\s\S]*?)<\/style><!-- \/si:styles -->/)?.[1];
 check(styleBlock, `styles not inlined: run ${BUILD} on this file`);
 if (styleBlock) {
   check(styleBlock.includes('@font-face'), `fonts not embedded: run ${BUILD} on this file`);
   const used = [...new Set([...html.replace(/<!-- si:styles -->[\s\S]*?<!-- \/si:styles -->/, '').matchAll(/\bdata-block="([^"]+)"/g)].map((m) => m[1]))];
   const stale = used.filter((n) => !styleBlock.includes(`/* block: ${n}`));
   check(stale.length === 0, `CSS missing for block(s) ${stale.join(', ')}: re-run ${BUILD}`);
+  // Browsers draw their own header and footer (file name, date, URL, page x of y) in the
+  // page margin. A zero @page margin leaves no room, so they never print.
+  const pageRules = [...styleBlock.matchAll(/@page\s*\{([^}]*)\}/g)].map((m) => m[1]);
+  check(pageRules.length && pageRules.every((r) => /margin\s*:\s*0(?:px|in|mm)?\s*(?:;|$)/.test(r.trim())),
+    `every @page rule needs "margin: 0" so browsers don't print their own header and footer: re-run ${BUILD}`);
 }
+check(/<link\b[^>]*\brel=["']?(?:shortcut )?icon\b/i.test(html), `no favicon: re-run ${BUILD}`);
 check(!/<pre class="si-mermaid__src">/.test(html), `unrendered Mermaid diagram: run ${BUILD}`);
 
 const docTag = html.match(/<main[^>]*class="si-doc"[^>]*>/)?.[0] ?? '';
@@ -83,7 +90,7 @@ if (kicker) {
   if (!n) warns.push(`kicker "${kicker}" should follow "<Field> · Summarized in N pages"`);
   else if (Number(n) !== promised) warns.push(`kicker says ${n} page(s) but data-pages is ${promised}`);
 }
-if (!/id="si-theme"/.test(html)) warns.push('no light/dark toggle: copy the #si-theme checkbox and its label from the wrapper skeleton');
+check(/id="si-theme"/.test(html) && /class="si-theme-toggle"/.test(html), 'no light/dark toggle: copy the #si-theme checkbox and its label from the wrapper skeleton, right after <body>');
 if (!/class="si-footer"/.test(html)) warns.push('no .si-footer: add sources and date as the last child of the last page');
 
 const kb = statSync(file).size / 1024;
@@ -159,7 +166,9 @@ if (!chrome) {
     }
 
     const pdf = args.pdf ? resolve(args.pdf) : join(tmp, 'out.pdf');
-    run(pathToFileURL(resolve(file)).href, [`--print-to-pdf=${pdf}`, '--no-pdf-header-footer']);
+    // Print with the browser's header and footer switched on, as a user's print dialog would,
+    // so the PDF shows whether they creep in.
+    run(pathToFileURL(resolve(file)).href, [`--print-to-pdf=${pdf}`]);
     const pdfText = readFileSync(pdf, 'latin1');
     printed = (pdfText.match(/\/Type\s*\/Page(?![a-zA-Z])/g) ?? []).length;
     const box = pdfText.match(/\/MediaBox\s*\[\s*[\d.]+\s+[\d.]+\s+([\d.]+)\s+([\d.]+)/);

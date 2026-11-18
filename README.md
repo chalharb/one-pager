@@ -79,7 +79,14 @@ folder. When the summary is ready, the agent asks whether to open it in your def
 browser or in your editor's preview.
 
 **Printing:** each page is its own sheet in the HTML, so the screen view matches the
-paper. Print always uses the light theme, and the theme toggle never prints.
+paper. Print always uses the light theme, and the theme toggle never prints. Pages set a
+zero print margin, so Chrome, Edge, and Safari don't add their own header and footer
+(file name, date, URL, page numbers). If you change the print dialog's margins from
+*Default*, or your browser still adds them, turn off *Headers and footers* in its print
+settings.
+
+**In the browser tab:** every summary gets a favicon, and its `<title>` comes from the
+headline when you don't set one. Both carry over to bookmarks and the PDF's title.
 
 ## Blocks
 

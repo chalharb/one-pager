@@ -13,7 +13,7 @@ landscape). The examples are unbuilt source, the form you write before running t
 
 | Block | File | Use it for |
 | --- | --- | --- |
-| **wrapper** | `wrapper.html` | The document shell. Copy its markup to start every summary. Owns theme tokens, light/dark mode, page sheets, footer, print rules, and base prose styles (`p`, `ul`, `ol`, `dl`, `table`, inline `code`, `kbd`, `blockquote`), plus the CSS-only light/dark toggle, which is hidden in print. |
+| **wrapper** | `wrapper.html` | The document shell. Copy its markup to start every summary. Owns theme tokens, light/dark mode, page sheets, footer, print rules, and base prose styles (`p`, `ul`, `ol`, `dl`, `table`, inline `code`, `kbd`, `blockquote`), plus the CSS-only light/dark toggle, which is hidden in print. Its zero `@page` margin stops browsers printing their own header and footer. The build adds a favicon and fills an empty `<title>` from the headline. |
 | **column-1** | `column-1.html` | A full-width stack: prose-led pages, wide tables, wide diagrams, or a band under a two-column area. |
 | **column-2** | `column-2.html` | Two columns with different jobs: explanation on one side, reference material on the other. `data-split="wide-left"` (default), `"wide-right"`, `"even"`. The default layout for most pages. |
 | **title** | `title.html` | Kicker (`<Field> · Summarized in N pages`), headline, and a full-width lede of at most ~300 characters. Once, at the top of page 1. |

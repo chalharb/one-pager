@@ -10,8 +10,9 @@
 //   1. Syntax-highlights every <code data-lang="..."> (re-highlights from plain text on rebuild).
 //   2. Renders every Mermaid source (<pre class="si-mermaid__src">, or data-src on an already
 //      rendered diagram) to inline SVG. Needs Chrome/Chromium/Edge; Mermaid is cached on first use.
-//   3. Collects the blocks named by data-block="..." and inlines the wrapper CSS plus only those
-//      blocks' CSS, then the sans font as base64 (code uses the system monospace font), between <!-- si:styles --> and <!-- /si:styles -->.
+//   3. Inlines a favicon, the wrapper CSS plus only the CSS of blocks named by data-block="...",
+//      and the sans font as base64, between <!-- si:styles --> and <!-- /si:styles -->.
+//   4. Fills an empty or {{TITLE}} <title> from the title block's headline.
 //
 // Custom blocks are read from <repo>/.summaries/blocks/ and ~/.summaries/blocks/ and
 // override built-ins of the same name.
@@ -107,9 +108,30 @@ const css = [
   pageRule,
 ].filter(Boolean).join('\n');
 
+// Favicon: a small summary sheet in the accent colour, inlined so the file stays standalone.
+// Written inside the style markers so rebuilds replace it. A rel="icon" of your own, outside
+// the markers, wins and is left alone.
+const FAVICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect x="5" y="2" width="22" height="28" rx="4" fill="#c4401a"/><path d="M10 10h12M10 15.5h12M10 21h7" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>`;
+const ownIcon = /<link\b[^>]*\brel=["']?(?:shortcut )?icon\b/i.test(html.replace(/<!-- si:styles -->[\s\S]*?<!-- \/si:styles -->/, ''));
+const favicon = ownIcon ? '' : `<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,${encodeURIComponent(FAVICON_SVG)}">`;
+
 const STYLE_RE = /<!-- si:styles -->[\s\S]*?<!-- \/si:styles -->/;
 if (!STYLE_RE.test(html)) errors.push('missing <!-- si:styles --><!-- /si:styles --> markers in <head>: copy them from the wrapper block');
-else html = html.replace(STYLE_RE, () => `<!-- si:styles --><style>\n${css}\n</style><!-- /si:styles -->`);
+else html = html.replace(STYLE_RE, () => `<!-- si:styles -->${favicon}<style>\n${css}\n</style><!-- /si:styles -->`);
+
+// Title: the browser tab, bookmarks, and the PDF's document title. When it is missing, empty,
+// or still the {{TITLE}} placeholder, use the headline from the title block.
+const headline = html.match(/<h1 class="si-title__heading"[^>]*>([\s\S]*?)<\/h1>/)?.[1];
+const headlineText = headline && unescapeHtml(stripTags(headline)).replace(/\s+/g, ' ').trim();
+const titleMatch = html.match(/<title>([\s\S]*?)<\/title>/i);
+const titleText = titleMatch?.[1].trim() ?? '';
+if (!titleText || /\{\{[^}]*\}\}/.test(titleText)) {
+  if (!headlineText) errors.push('no <title> and no title-block headline to take it from: set <title> in <head>');
+  else {
+    const tag = `<title>${escapeAttr(headlineText)}</title>`;
+    html = titleMatch ? html.replace(titleMatch[0], () => tag) : html.replace(/<\/head>/i, () => `${tag}\n</head>`);
+  }
+}
 
 // Report ----------------------------------------------------------------------
 for (const w of warnings) console.error(`  warn  ${w}`);
