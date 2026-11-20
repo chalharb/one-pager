@@ -144,6 +144,8 @@ tools/install.sh          link or copy the skill into each harness
 
 ## Develop
 
+Testing: `node --test skills/summarize-in/scripts/`
+
 The examples in `skills/summarize-in/assets/examples/` are unbuilt so they stay small
 when an agent reads them. Edit those, then rebuild the copies in `docs/examples/`:
 
