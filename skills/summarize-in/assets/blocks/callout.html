@@ -1,0 +1,31 @@
+<!--
+@block callout
+@use Pull one takeaway, tip, or warning out of the flow. At most two per page; a callout that repeats the text is noise.
+@options data-tone="note" (default, ember on sand), "info", "tip", "warn", or "danger". The title line is optional.
+-->
+<style>
+.si-callout {
+  --si-callout-accent: var(--si-ember);
+  margin: 0; padding: 11px 14px;
+  border-left: 3px solid var(--si-callout-accent); border-radius: 0 6px 6px 0;
+  background: var(--si-sand);
+  font-size: 13px; line-height: 1.5;
+  display: flex; flex-direction: column; gap: 4px;
+  break-inside: avoid;
+}
+.si-callout[data-tone="info"]   { --si-callout-accent: var(--si-cobalt); }
+.si-callout[data-tone="tip"]    { --si-callout-accent: var(--si-green); }
+.si-callout[data-tone="warn"]   { --si-callout-accent: var(--si-amber); }
+.si-callout[data-tone="danger"] { --si-callout-accent: var(--si-red); }
+.si-callout:not([data-tone="note"]):is([data-tone]) { background: color-mix(in srgb, var(--si-callout-accent) 9%, var(--si-raised)); }
+.si-callout__title {
+  margin: 0; font: 600 10.5px/1.4 var(--si-mono); letter-spacing: .1em; text-transform: uppercase;
+  color: var(--si-callout-accent);
+}
+.si-callout p { margin: 0; }
+</style>
+
+<aside class="si-callout" data-block="callout" data-tone="note">
+  <p class="si-callout__title">Note</p>
+  <p>Pages that overflow get cut, not shrunk. If the summary feels terse, that is the page budget doing its job.</p>
+</aside>

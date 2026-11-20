@@ -1,0 +1,20 @@
+<!--
+@block mermaid
+@use A flow, sequence, or structure that a list explains badly. Rendered to inline SVG at build time and recoloured to the theme, so it follows dark mode and prints crisply. At most one per page.
+@options Write Mermaid source in <pre class="si-mermaid__src">. Keep it small: about six nodes, one-to-three-word labels, flowchart LR/TB or sequenceDiagram. No classDef or colours; the theme applies them. After a build the source lives in data-src on .si-mermaid__svg; edit it there and rebuild. Optional figcaption.
+-->
+<style>
+.si-mermaid { margin: 0; display: flex; flex-direction: column; gap: 6px; break-inside: avoid; min-width: 0; }
+.si-mermaid__svg svg { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+.si-mermaid__src { margin: 0; font: 11px/1.5 var(--si-mono); color: var(--si-muted); white-space: pre-wrap; }
+.si-mermaid__caption { font-size: 12px; color: var(--si-muted); text-align: center; }
+</style>
+
+<figure class="si-mermaid" data-block="mermaid">
+<pre class="si-mermaid__src">
+flowchart LR
+  U[User] --> E[Edge PoP]
+  E -->|cache miss| O[Origin]
+</pre>
+  <figcaption class="si-mermaid__caption">Requests stop at the nearest edge; only misses travel to origin.</figcaption>
+</figure>

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="generator" content="summarize-in">
+<title>How edge networks work</title>
+<!-- si:styles --><!-- /si:styles -->
+</head>
+<body class="si-body">
+<input type="checkbox" id="si-theme" class="si-theme-input" aria-label="Switch between light and dark mode">
+<label for="si-theme" class="si-theme-toggle" title="Switch between light and dark mode">
+  <span class="si-theme-to-dark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>Dark</span>
+  <span class="si-theme-to-light"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Light</span>
+</label>
+<main class="si-doc" data-block="wrapper" data-pages="2" data-paper="letter">
+  <section class="si-page">
+    <header class="si-title" data-block="title">
+      <p class="si-title__kicker">Networking · Summarized in 2 pages</p>
+      <h1 class="si-title__heading">How edge networks work</h1>
+      <p class="si-title__lede">An edge network keeps copies of your content, and increasingly your code, in data centers close to users. Most requests are answered a few milliseconds away instead of crossing an ocean to your origin server.</p>
+    </header>
+
+    <div class="si-column-2" data-block="column-2">
+      <div class="si-column-2__col">
+        <section>
+          <h2 class="si-subtitle" data-block="subtitle">The problem is distance</h2>
+          <p>Light in optical fiber covers about 200,000 km per second. A user in Sydney talking to a server in Virginia, roughly 15,700 km away, waits at least <strong>160 ms per round trip</strong>, however fast either end is.</p>
+          <p>Round trips stack up. A fresh HTTPS request needs one for the TCP handshake, one for TLS 1.3, and one for the request itself: about half a second before the first byte. Put a server 10 ms from the user and the same three trips take 30 ms.</p>
+        </section>
+
+        <section>
+          <h2 class="si-subtitle" data-block="subtitle">How a request finds the edge</h2>
+          <figure class="si-mermaid" data-block="mermaid">
+<pre class="si-mermaid__src">
+flowchart LR
+  U[User] --&gt; P[PoP]
+  P --&gt;|miss| S[Shield]
+  S --&gt; O[Origin]
+</pre>
+          </figure>
+          <p><strong>Anycast</strong> announces one IP address from every location over BGP, so ordinary internet routing delivers each user to a nearby point of presence (PoP). <strong>DNS steering</strong> does the same job by answering each resolver with the address of a PoP near it.</p>
+          <p>The PoP finishes the TCP and TLS handshakes, then serves from cache. On a miss it asks an <strong>origin shield</strong>, a mid-tier cache, so a thousand PoPs missing at once become one request to your origin.</p>
+        </section>
+      </div>
+
+      <div class="si-column-2__col">
+        <section>
+          <h2 class="si-subtitle" data-block="subtitle">Key terms</h2>
+          <dl>
+            <dt>PoP</dt><dd>A data center full of edge servers</dd>
+            <dt>Origin</dt><dd>Your server, the source of truth</dd>
+            <dt>Hit ratio</dt><dd>Share of requests served from cache</dd>
+            <dt>TTL</dt><dd>How long a cached copy counts as fresh</dd>
+            <dt>Purge</dt><dd>Evicting cached copies before their TTL ends</dd>
+          </dl>
+        </section>
+
+        <aside class="si-callout" data-block="callout">
+          <p>Most web latency is round trips, not bandwidth. The edge wins by making every round trip short, starting with the handshakes.</p>
+        </aside>
+
+        <section>
+          <h2 class="si-subtitle" data-block="subtitle">What runs at the edge</h2>
+          <ul>
+            <li><strong>Caching</strong> of assets, pages, and API responses.</li>
+            <li><strong>TLS termination</strong> close to the user.</li>
+            <li><strong>Security</strong>: DDoS absorption, WAF rules, bot checks.</li>
+            <li><strong>Transforms</strong>: image resizing, compression, redirects.</li>
+            <li><strong>Edge functions</strong>: your code, run in lightweight isolates at every PoP.</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <section class="si-page">
+    <div class="si-column-2" data-block="column-2">
+      <div class="si-column-2__col">
+        <section>
+          <h2 class="si-subtitle" data-block="subtitle">Telling the edge what to keep</h2>
+          <p>The origin controls caching with the <code>Cache-Control</code> response header. Browsers and shared caches such as CDNs read different directives, so one header can set both.</p>
+          <figure class="si-code" data-block="code">
+            <figcaption class="si-code__label">response header</figcaption>
+            <pre><code data-lang="http">Cache-Control: public, max-age=60, s-maxage=86400,
+               stale-while-revalidate=300</code></pre>
+          </figure>
+          <ul>
+            <li><strong><code>max-age=60</code></strong> lets browsers reuse it for a minute.</li>
+            <li><strong><code>s-maxage=86400</code></strong> lets the edge keep it for a day.</li>
+            <li><strong><code>stale-while-revalidate</code></strong> serves the old copy while a fresh one is fetched in the background.</li>
+          </ul>
+          <p>The <strong>cache key</strong>, usually host plus URL, decides what counts as the same object. Varying it on cookies or many headers splits one object into thousands and sinks the hit ratio.</p>
+        </section>
+
+        <section>
+          <h2 class="si-subtitle" data-block="subtitle">Code at the edge</h2>
+          <p>Edge functions use the Fetch API shape most edge runtimes share: take a <code>Request</code>, return a <code>Response</code>. This one passes API calls through and caches everything else for an hour.</p>
+          <figure class="si-code" data-block="code">
+            <figcaption class="si-code__label">edge.js</figcaption>
+            <pre><code data-lang="js">const TTL = "public, s-maxage=3600";
+
+export default {
+  async fetch(request) {
+    const url = new URL(request.url);
+    if (url.pathname.startsWith("/api/")) {
+      return fetch(request); // straight to origin
+    }
+    const res = await fetch(request);
+    const out = new Response(res.body, res);
+    out.headers.set("Cache-Control", TTL);
+    return out;
+  },
+};</code></pre>
+          </figure>
+        </section>
+      </div>
+
+      <div class="si-column-2__col">
+        <section>
+          <h2 class="si-subtitle" data-block="subtitle">Trade-offs</h2>
+          <ul>
+            <li><strong>Staleness.</strong> A cached copy is wrong from the moment the origin changes until its TTL ends or you purge it.</li>
+            <li><strong>Data gravity.</strong> Code moves to the edge easily; databases do not.</li>
+            <li><strong>Tight limits.</strong> Edge functions get small CPU-time and memory budgets.</li>
+            <li><strong>Harder debugging.</strong> One request can behave differently in each of hundreds of locations.</li>
+          </ul>
+        </section>
+
+        <aside class="si-callout" data-block="callout" data-tone="warn">
+          <p class="si-callout__title">Watch for</p>
+          <p>An edge function that queries a database in one region can be slower than no edge at all, because every query pays the long round trip.</p>
+        </aside>
+
+        <section>
+          <h2 class="si-subtitle" data-block="subtitle">Where it pays off</h2>
+          <table>
+            <thead><tr><th>Workload</th><th>Gain</th></tr></thead>
+            <tbody>
+              <tr><td>Static assets, media</td><td>High</td></tr>
+              <tr><td>Video segments</td><td>High</td></tr>
+              <tr><td>Pages with short TTLs</td><td>Medium</td></tr>
+              <tr><td>Personalized HTML</td><td>Medium, with edge code</td></tr>
+              <tr><td>API on a central DB</td><td>Low</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </div>
+
+    <footer class="si-footer">
+      <span>Sources: RFC 9111 (HTTP caching), RFC 5861 (stale-while-revalidate), RFC 8446 (TLS 1.3)</span>
+      <span>November 2026</span>
+    </footer>
+  </section>
+</main>
+</body>
+</html>
